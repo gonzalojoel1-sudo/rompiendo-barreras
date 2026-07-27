@@ -174,17 +174,67 @@ def _role_for_label(label: str) -> str:
 
 
 def _call_llm(system_prompt: str, user_input: str, label: str) -> dict:
-    """Llama al proveedor LLM del subagente via llm_client; fallback a stub."""
+    """Llama al proveedor LLM del subagente via llm_client; fallback a stub.
+
+    Sprint 17: para Copywriter y Guardian, usa TOOL CALLING para que el LLM
+    pueda LEER archivos del búnker segun la necesidad. Para el resto, usa
+    el modo chat tradicional.
+    """
     if _is_real_key():
         role = _role_for_label(label)
-        try:
-            content = _llm_generate(role, system_prompt, user_input, json_mode=True)
-            return _parse_llm_json(content, label)
-        except LLMError as exc:
-            log.warning("[%s] LLM fallo (%s), usando STUB", label, exc)
-        except (json.JSONDecodeError, ValueError) as exc:
-            log.warning("[%s] LLM devolvio JSON invalido (%s), usando STUB", label, exc)
+        # Tool calling solo para Copywriter (lee estructura + gold standard)
+        # y Brand Guardian (lee examples para validar). Trend Hunter y Strategist
+        # reciben el contexto via system prompt tradicional.
+        if label.lower() in ("copywriter", "brand guardian", "guardian"):
+            try:
+                return _llm_generate_with_tools(role, system_prompt, user_input)
+            except LLMError as exc:
+                log.warning("[%s] agent_loop fallo (%s), usando STUB", label, exc)
+            except (json.JSONDecodeError, ValueError) as exc:
+                log.warning("[%s] agent_loop JSON invalido (%s), usando STUB", label, exc)
+        else:
+            try:
+                content = _llm_generate(role, system_prompt, user_input, json_mode=True)
+                return _parse_llm_json(content, label)
+            except LLMError as exc:
+                log.warning("[%s] LLM fallo (%s), usando STUB", label, exc)
+            except (json.JSONDecodeError, ValueError) as exc:
+                log.warning("[%s] LLM devolvio JSON invalido (%s), usando STUB", label, exc)
     return _stub_response(label, user_input)
+
+
+def _llm_generate_with_tools(role: str, system_prompt: str, user_input: str) -> dict:
+    """Genera con tool calling. Retorna dict con la respuesta parseada.
+
+    Para Copywriter: el LLM lee el búnker, luego escribe el guion.
+    Para Guardian: el LLM lee el búnker para validar, luego aprueba.
+    """
+    from vps_backend.tools import BUNKER_TOOLS, run_agent_loop
+    # Si el rol no tiene provider con tools, fallback a chat
+    from vps_backend.llm_client import PROVIDER_CONFIGS
+    if role not in PROVIDER_CONFIGS:
+        # fallback al modo chat
+        content = _llm_generate(role, system_prompt, user_input, json_mode=True)
+        return _parse_llm_json(content, role)
+
+    cfg = PROVIDER_CONFIGS[role]
+    provider = cfg.get("style", "minimax")  # "openai", "gemini", "vertex"
+    if provider == "vertex":
+        provider_name = "vertex"
+    else:
+        provider_name = "minimax"
+
+    # Llamar al loop de agente
+    result_str = run_agent_loop(
+        provider=provider_name,
+        model=cfg.get("default_model", "minimax-m3"),
+        system_prompt=system_prompt,
+        user_prompt=user_input,
+        tools=BUNKER_TOOLS,
+        max_iterations=5,
+    )
+    # Parsear el resultado como JSON
+    return _parse_llm_json(result_str, role)
 
 
 def _parse_llm_json(content: str, label: str) -> dict:
