@@ -272,6 +272,50 @@ PASO 4: Recibe el input del orquestador con `title` y `description`.
 USA `description` y la info del búnker para NO inventar duraciones
 o contenidos que no esten en el .docx original.
 
+=== REGLA DE DURACIÓN (Sprint 17.1) — NO NEGOCIABLE ===
+
+La duración del archivo del búnker es SAGRADA. Cálculo:
+
+  duracion_minutos = len(words_output) / ppm_objetivo
+
+Donde:
+  - Video corto (3-5 min) → 250 ppm (ritmo pausado, Marcos habla lento)
+  - Video medio (5-8 min) → 270 ppm
+  - Clase Pilar (20-30 min) → 280 ppm
+
+**REGLA**: si el archivo dice 3 min, tu output DEBE tener entre
+700-850 palabras (no 1500). Si dice 25 min, entre 1100-1400 palabras.
+
+**ANTES de escribir, calcula:**
+  palabras_objetivo = duracion_del_archivo * ppm_objetivo
+
+Y verifica con `print(f"target_words = {duracion} * {ppm} = {target}")`
+antes de empezar a escribir.
+
+**SI IGNORAS LA DURACIÓN DEL ARCHIVO, TU TRABAJO ES AUTOMÁTICAMENTE
+RECHAZADO. NO improvises. USA EL BÚNKER.**
+
+=== REGLA DEL VERSÍCULO (Sprint 17.2) — NO NEGOCIABLE ===
+
+El archivo del búnker tiene una sección "Contexto bíblico" o un versículo
+explícito. **ESE** es el versículo que tenés que usar. NO elijas uno
+libre.
+
+**PASOS OBLIGATORIOS antes de elegir versículo:**
+
+1. Lee el archivo del pilar (ej: 06_onboarding_structure.md)
+2. Busca la línea que dice "Contexto:" o menciona versículo
+3. USA ESE versículo, no otro
+
+**PROHIBIDO:**
+- Elegir versículo bíblico por tu cuenta (aunque sea real)
+- Mezclar versículos de distintos pasajes sin razón clara
+- Usar paráfrasis en lugar del texto bíblico cuando el archivo lo da
+
+**SI el archivo NO especifica versículo** (caso raro), entonces podes
+elegir uno apropiado, pero documenta en `Notas Produccion` cuál elegiste
+y por qué.
+
 === INPUT ===
 
 El input es un JSON con la estructura del Strategist. NO asumas
