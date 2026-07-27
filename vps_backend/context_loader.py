@@ -38,6 +38,7 @@ CANONICAL_FILE_ORDER: list[str] = [
     "03_target_avatar",
     "04_product_matrix",
     "05_gold_standard_examples",
+    "06_onboarding_structure",
 ]
 
 # Headers legibles para cada archivo cuando se concatenan en el prompt.
@@ -47,6 +48,7 @@ _FILE_HEADERS: dict[str, str] = {
     "03_target_avatar": "AVATAR OBJETIVO Y OBJECIONES",
     "04_product_matrix": "MATRIZ DE PRODUCTO (PILARES)",
     "05_gold_standard_examples": "EJEMPLOS DE ORO (REFERENCIA DE CALIDAD)",
+    "06_onboarding_structure": "ESTRUCTURA ONBOARDING (8 VIDEOS)",
 }
 
 # Mensaje de fallback si el búnker no esta disponible. Es corto y
@@ -84,11 +86,6 @@ def load_context_vault() -> dict[str, str]:
     Devuelve dict vacio si el búnker no existe. Nunca lanza excepcion.
     """
     vault_path = _get_vault_path()
-
-
-def invalidate_cache() -> None:
-    """Invalida el cache de load_context_vault()."""
-    load_context_vault.cache_clear()
     log.info("context_loader: cargando búnker desde %s", vault_path)
 
     if not vault_path.exists():
@@ -116,6 +113,12 @@ def invalidate_cache() -> None:
         len(result), len(CANONICAL_FILE_ORDER), sum(len(v) for v in result.values()),
     )
     return result
+
+
+def invalidate_cache() -> None:
+    """Invalida el cache de load_context_vault()."""
+    load_context_vault.cache_clear()
+    log.info("context_loader: cache invalidado")
 
 
 def get_unified_context_prompt() -> str:

@@ -666,7 +666,6 @@ __all__ = [
     "LLMError",
     "generate_completion",
     "list_agent_roles",
-    "resolve_agent",
     "mask_key",
     "sanitize_content",
     "PROVIDER_CONFIGS",

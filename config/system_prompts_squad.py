@@ -216,7 +216,7 @@ cruzan los tres.
 1. Distribuye al menos 1 idea por cada uno de los 3 hooks (Hook 1, 2, 3) si target=db2.
 2. Distribuye al menos 1 idea por cada uno de los 7 Pilares si target=db1.
 3. Cada idea debe mapear a UN solo target_db (db1 o db2), no ambos.
-4. Genera EXACTAMENTE 3 ideas en total.
+4. Genera EXACTAMENTE {n_ideas} ideas en total.
 5. El title debe ser vendible y especifico, max 100 chars.
 6. source_gancho_id es OBLIGATORIO: indica de que T1..T5 viene la idea.
 
@@ -522,41 +522,6 @@ __all__ = [
     "STRATEGIST_PROMPT",
     "COPYWRITER_PROMPT",
     "GUARDIAN_PROMPT",
-    "AGENT_MODEL_MAP",
 ]
 
-# =============================================================================
-# Asignacion de modelos por subagente (multi-proveedor)
-# =============================================================================
-# Formato: role -> (provider, model). Overridable via env var SQUAD_<ROLE>_MODEL
-#   ej: SQUAD_TREND_HUNTER_MODEL=opencode/qwen3.7-max
 
-# Sprint 14: Chain de fallback por agente (orden = prioridad).
-# Cada agente tiene una lista de (provider, model) que se prueban en orden.
-# - trend_hunter: MiniMax M2.7-highspeed (ultra-rapido para escaneo de patrones)
-# - strategist: MiniMax M3 (razonamiento profundo, contexto largo)
-# - copywriter: Gemini 3.5 Flash -> Claude Sonnet 4.5 -> MiniMax M3
-# - guardian: MiniMax M2.7-highspeed -> Gemini Flash-Lite (backup)
-AGENT_CHAIN_MAP: dict[str, list[tuple[str, str]]] = {
-    "trend_hunter": [
-        ("minimax", "minimax-m2.7-highspeed"),
-    ],
-    "strategist": [
-        ("minimax", "minimax-m3"),
-    ],
-    "copywriter": [
-        ("vertex", "gemini-3.5-flash"),
-        ("vertex", "claude-sonnet-4-5"),
-        ("minimax", "minimax-m3"),
-    ],
-    "guardian": [
-        ("minimax", "minimax-m2.7-highspeed"),
-        ("vertex", "gemini-3.5-flash-lite"),
-    ],
-}
-
-# Backwards-compat alias (sprint 13): el primer modelo del chain.
-# Usado por tests o scripts externos que esperan un solo (provider, model).
-AGENT_MODEL_MAP: dict[str, tuple[str, str]] = {
-    role: chain[0] for role, chain in AGENT_CHAIN_MAP.items()
-}

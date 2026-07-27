@@ -42,7 +42,6 @@ BUNKER_FILE_WHITELIST = {
     "04_product_matrix.md",
     "05_gold_standard_examples.md",
     "06_onboarding_structure.md",
-    "07_guion_bienvenida_referencia.md",
 }
 
 
@@ -340,7 +339,8 @@ def run_agent_loop(
         tools = BUNKER_TOOLS
 
     if not api_key:
-        api_key = os.getenv("MINIMAX_API_KEY", "").strip().strip('"').strip("'")
+        api_key_env = _get_api_key_env(provider)
+        api_key = os.getenv(api_key_env, "").strip().strip('"').strip("'") if api_key_env else ""
     if not api_key:
         return f"Error: API key no configurada para provider {provider}"
 
@@ -352,7 +352,7 @@ def run_agent_loop(
 
         if provider == "vertex":
             response, tool_calls = _call_vertex_with_tools(
-                system_prompt, messages, tools, project, location
+                system_prompt, messages, tools, model, project, location
             )
         elif provider == "minimax":
             response, tool_calls = _call_minimax_with_tools(
@@ -397,6 +397,7 @@ def _call_vertex_with_tools(
     system_prompt: str,
     messages: list[dict],
     tools: list[dict],
+    model: str,
     project: str = None,
     location: str = None,
 ) -> tuple[str, list[dict]]:
@@ -470,7 +471,7 @@ def _call_vertex_with_tools(
 
     url = (
         f"https://aiplatform.googleapis.com/v1/projects/{project}/locations/{location}"
-        f"/publishers/google/models/gemini-2.5-flash:generateContent"
+        f"/publishers/google/models/{model}:generateContent"
     )
     req = urllib.request.Request(url, method="POST", data=json.dumps(payload).encode())
     req.add_header("Authorization", f"Bearer {creds.token}")

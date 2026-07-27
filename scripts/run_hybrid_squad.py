@@ -36,7 +36,6 @@ sys.path.insert(0, str(ROOT / "config"))
 sys.path.insert(0, str(ROOT / "vps_backend"))
 
 from system_prompts_squad import (  # noqa: E402
-    AGENT_MODEL_MAP,
     COPYWRITER_PROMPT,
     GUARDIAN_PROMPT,
     STRATEGIST_PROMPT,
@@ -44,10 +43,9 @@ from system_prompts_squad import (  # noqa: E402
 )
 from llm_client import generate_completion as _llm_generate, LLMError  # noqa: E402
 
-NOTION_TOKEN = os.getenv(
-    "NOTION_API_KEY",
-    "ntn_REDACTED_LEAK_2026-07-28",
-)
+NOTION_TOKEN = os.getenv("NOTION_API_KEY", "")
+if not NOTION_TOKEN:
+    raise ValueError("NOTION_API_KEY environment variable is required")
 
 # Auto-load vps_backend/.env si existe (soporta las API keys de los 3 proveedores)
 try:
@@ -210,30 +208,23 @@ def _llm_generate_with_tools(role: str, system_prompt: str, user_input: str) -> 
     Para Guardian: el LLM lee el búnker para validar, luego aprueba.
     """
     from vps_backend.tools import BUNKER_TOOLS, run_agent_loop
-    # Si el rol no tiene provider con tools, fallback a chat
-    from vps_backend.llm_client import PROVIDER_CONFIGS
-    if role not in PROVIDER_CONFIGS:
-        # fallback al modo chat
-        content = _llm_generate(role, system_prompt, user_input, json_mode=True)
-        return _parse_llm_json(content, role)
+    from vps_backend.llm_client import _get_agent_chain, _get_provider_config
 
-    cfg = PROVIDER_CONFIGS[role]
-    provider = cfg.get("style", "minimax")  # "openai", "gemini", "vertex"
-    if provider == "vertex":
-        provider_name = "vertex"
-    else:
-        provider_name = "minimax"
+    chain = _get_agent_chain(role)
+    if not chain:
+        raise LLMError(f"No hay chain disponible para rol: {role}")
 
-    # Llamar al loop de agente
+    provider, model = chain[0]
+    cfg = _get_provider_config(provider)
+
     result_str = run_agent_loop(
-        provider=provider_name,
-        model=cfg.get("default_model", "minimax-m3"),
+        provider=provider,
+        model=model,
         system_prompt=system_prompt,
         user_prompt=user_input,
         tools=BUNKER_TOOLS,
         max_iterations=5,
     )
-    # Parsear el resultado como JSON
     return _parse_llm_json(result_str, role)
 
 
@@ -860,8 +851,14 @@ Generado automáticamente para pruebas.
 
 
 
-def _validate_against_bunker(markdown, target):
+def _validate_against_bunker(markdown, target, estimated_duration_min=None):
     """Sprint 6: valida el guion contra el checklist del bunker de contexto.
+
+    Args:
+        markdown: El contenido a validar.
+        target: "db1" (clase) o "db2" (anuncio).
+        estimated_duration_min: Duracion estimada en minutos para validacion
+            de word count. Si es None, usa hardcoded 1300 para db1.
 
     Returns:
         dict con {"passed": bool, "issues": [str], "score": int (0-10)}.
@@ -933,9 +930,26 @@ def _validate_against_bunker(markdown, target):
                 issues.append(f"checklist: falta seccion {_name}")
                 score -= 1
         word_count = len(markdown.split())
-        if word_count < 1300:
+        # HIGH 5: Validar word count basado en duracion estimada
+        # Sprint 17.1: 3min=700-850, 5min=1250-1350, 25min=1100-1400
+        # DB1 sin duracion: 1400-1600
+        dur = estimated_duration_min if estimated_duration_min else 25
+        if dur <= 3:
+            min_words, max_words = 700, 850
+        elif dur <= 5:
+            min_words, max_words = 1250, 1350
+        elif dur >= 20:
+            min_words, max_words = 1100, 1400
+        else:
+            min_words, max_words = 1400, 1600
+        if word_count < min_words:
             issues.append(
-                f"checklist: word_count bajo ({word_count}, esperado >=1300)"
+                f"checklist: word_count bajo ({word_count}, esperado {min_words}-{max_words} para {dur}min)"
+            )
+            score -= 1
+        elif word_count > max_words:
+            issues.append(
+                f"checklist: word_count alto ({word_count}, esperado {min_words}-{max_words} para {dur}min)"
             )
             score -= 1
 
@@ -969,7 +983,7 @@ def _stub_guardian(validated: dict) -> dict:
     key_takeaway = validated.get("key_takeaway", "")
 
     # Sprint 6: ejecutar el loop de auditoria QA contra el bunker
-    validation = _validate_against_bunker(markdown, target)
+    validation = _validate_against_bunker(markdown, target, estimated_duration_min=validated.get("estimated_duration_min"))
     if not validation["passed"]:
         log.warning(
             "Brand Guardian: guion '%s' NO pasa auditoria (score=%d/10). "
@@ -1130,10 +1144,17 @@ def _split_rich_text(text: str, max_chars: int = 1900) -> list[dict]:
 # Setup: ensure pipeline status options exist in both DBs
 # =============================================================================
 
+_status_options_ensured = False
+
 def ensure_status_options(manifest: dict[str, str]) -> None:
     """Sprint 8: ensure status options en TODAS las DBs que tengan propiedad de status.
     Ya no es DB1+DB2; son todas las DBs del manifest.
     """
+    global _status_options_ensured
+    if _status_options_ensured:
+        return
+    _status_options_ensured = True
+
     pipeline_statuses = ["Esperando Aprobacion", "Aprobado", "Listo para Grabar"]
     for db_key, db_id in manifest.items():
         if not db_key.startswith("db_"):
@@ -1209,7 +1230,8 @@ def mode_ideate(manifest: dict[str, str], topic: str, db_key: str = "db_M0", n_i
     # Sprint 4: inyectar la Matriz de Productos y combinar brief + 5 ganchos
     from system_prompts_squad import _load_product_matrix_text
     st_system = STRATEGIST_PROMPT.format(
-        product_matrix_text=_load_product_matrix_text()
+        product_matrix_text=_load_product_matrix_text(),
+        n_ideas=n_ideas,
     )
     st_user_input = json.dumps(trends)
     if briefs:
@@ -1337,7 +1359,7 @@ def _find_approval_candidates(manifest: dict[str, str], page_id: str | None, tit
             log.warning("Query %s fallo: %s", db_key, exc)
             continue
         for r in results:
-            title_prop = "Nombre_Clase" if db_key == "db1" else "Nombre_Anuncio"
+            title_prop = "Título Guion" if db_key == "db1" else "Nombre Presentación"
             try:
                 title = "".join(t.get("plain_text", "") for t in r["properties"][title_prop]["title"])
             except Exception:
@@ -1491,6 +1513,9 @@ def _process_one_page(page: dict, manifest: dict[str, str], dry_run: bool) -> No
     if pilar_prop and db_key in ("db_ideas", "db1"):
         select_obj = page["properties"].get(pilar_prop, {}).get("select") or {}
         idea_payload["pilar"] = select_obj.get("name", "") if isinstance(select_obj, dict) else ""
+        if not idea_payload["pilar"]:
+            log.warning("Pilar missing for page %s, db_key=%s. Setting default 'Sin Pilar Asignado'.", page["id"], db_key)
+            idea_payload["pilar"] = "Sin Pilar Asignado"
     if avatar_prop and db_key == "db2":
         avatar_obj = page["properties"].get(avatar_prop, {}).get("select") or {}
         idea_payload["avatar_target"] = avatar_obj.get("name", "") if isinstance(avatar_obj, dict) else ""
@@ -1498,46 +1523,42 @@ def _process_one_page(page: dict, manifest: dict[str, str], dry_run: bool) -> No
         idea_payload["tipo_hook"] = hook_obj.get("name", "") if isinstance(hook_obj, dict) else ""
 
     # Subagente 3: Copywriter (sprint 5: inyectar Ejemplos de Oro en el prompt)
+    # HIGH 2 & 4: Inyectar brief del Orquestador y TODO el contexto del bunker
     log.info("  [3] Copywriter...")
-    from system_prompts_squad import _load_gold_standard_examples_text
+    from system_prompts_squad import (
+        _load_gold_standard_examples_text,
+        _load_avatar_text,
+        _load_product_matrix_text,
+    )
+    try:
+        import sys
+        from pathlib import Path
+        PROJECT_ROOT = Path(__file__).resolve().parent.parent
+        if str(PROJECT_ROOT / "vps_backend") not in sys.path:
+            sys.path.insert(0, str(PROJECT_ROOT / "vps_backend"))
+        from orchestrator import generate_surgical_briefs
+        cw_briefs = generate_surgical_briefs(title)
+        cw_brief_text = f"\n\nBRIEF DEL ORQUESTADOR:\n{cw_briefs.get('copywriter_brief', 'No hay brief disponible')}"
+    except Exception as exc:
+        log.warning("  Orquestador no disponible para Copywriter (%s); continuando sin brief.", exc)
+        cw_brief_text = ""
+    full_bunker_context = (
+        f"=== CONTEXTO COMPLETO DEL BUNKER ===\n\n"
+        f"--- AVATAR ---\n{_load_avatar_text()}\n\n"
+        f"--- MATRIZ DE PRODUCTOS ---\n{_load_product_matrix_text()}\n\n"
+        f"--- EJEMPLOS DE ORO ---\n{_load_gold_standard_examples_text()}\n\n"
+        f"{cw_brief_text}"
+    )
     cw_system = COPYWRITER_PROMPT.format(
-        gold_standard_examples_text=_load_gold_standard_examples_text()
+        gold_standard_examples_text=full_bunker_context
     )
     script = _call_llm(cw_system, json.dumps(idea_payload), label="Copywriter")
     log.info("      word_count=%d duracion=%d min", script.get("word_count", 0), script.get("estimated_duration_min", 0))
 
-    # Subagente 4: Brand Guardian
-    # Sprint 11: usamos SIEMPRE el stub del Guardian porque procesa el markdown
-    # del Copywriter en bloques validos de Notion. El LLM tiende a generar
-    # tipos de bloque no soportados (embed, bookmark) que rompen el PATCH.
-    log.info("  [4] Brand Guardian (stub seguro)...")
-    guardian_input = {
-        "page_id": page["id"],
-        "target_db": db_key,
-        "title": title,
-        "content_markdown": script.get("content_markdown", ""),
-        "key_takeaway": script.get("key_takeaway", ""),
-        "estimated_duration_min": script.get("estimated_duration_min", 25),
-    }
-    chunks = _stub_guardian(guardian_input)
-    log.info("      blocks=%d chars=%d", chunks.get("block_count", 0), chunks.get("total_chars", 0))
-    val = chunks.get("validation", {})
-    if not val.get("passed"):
-        for issue in val.get("issues", []):
-            log.warning("      validation: %s", issue)
-
-    if dry_run:
-        log.info("  [DRY-RUN] skip publicacion y update de estado")
-        PASSED.append(f"dryrun {page['id']}")
-        return
-
-    # Sprint 8: Publicar bloques en la pagina CORRECTA
-    # Si la idea viene de una DB de pilar (db_M0..db_P7), crear NUEVA pagina en la MISMA DB
-    # Si la idea viene de db_ideas legacy, crear pagina en db1
-    # Si la idea viene de db1/db2 legacy, los bloques se agregan a la misma pagina
-    target_publish_id = page["id"]  # default: misma pagina
+    # HIGH 6: For new pillar DBs, create the new page BEFORE calling Guardian
+    # so guardian_input.page_id is correct for the page where blocks will be published
+    target_publish_id = page["id"]  # default: same page
     if db_key.startswith("db_") and db_key not in ("db1", "db2", "db_ideas", "db_prod"):
-        # Crear una NUEVA pagina en la DB del pilar
         guion_title = title
         guion_payload = {
             "parent": {"database_id": manifest[db_key]},
@@ -1550,9 +1571,8 @@ def _process_one_page(page: dict, manifest: dict[str, str], dry_run: bool) -> No
         }
         result = _req("POST", "/pages", guion_payload)
         target_publish_id = result.get("id", page["id"])
-        log.info("      guion creado en DB %s: %s", db_key, target_publish_id)
+        log.info("      guion creado en DB %s ANTES de Guardian: %s", db_key, target_publish_id)
     elif db_key == "db_ideas":
-        # LEGACY: crear en db1
         guion_title = title
         guion_payload = {
             "parent": {"database_id": manifest["db1"]},
@@ -1564,8 +1584,45 @@ def _process_one_page(page: dict, manifest: dict[str, str], dry_run: bool) -> No
         }
         result = _req("POST", "/pages", guion_payload)
         target_publish_id = result.get("id", page["id"])
-        log.info("      guion creado en DB Guiones: %s", target_publish_id)
-        # Crear relacion con la idea original
+        log.info("      guion creado en DB Guiones ANTES de Guardian: %s", target_publish_id)
+
+    # Subagente 4: Brand Guardian
+    # HIGH 1: Try LLM first with GUARDIAN_PROMPT, fallback to stub if LLM fails
+    # The Guardian validates content using checklists from GUARDIAN_PROMPT
+    log.info("  [4] Brand Guardian (LLM + stub fallback)...")
+    guardian_input = {
+        "page_id": target_publish_id,
+        "target_db": db_key,
+        "title": title,
+        "content_markdown": script.get("content_markdown", ""),
+        "key_takeaway": script.get("key_takeaway", ""),
+        "estimated_duration_min": script.get("estimated_duration_min", 25),
+    }
+    try:
+        chunks = _call_llm(GUARDIAN_PROMPT, json.dumps(guardian_input), label="Guardian")
+        if not chunks or "blocks" not in chunks:
+            raise ValueError("Guardian LLM returned invalid output")
+        log.info("      Guardian LLM: blocks=%d chars=%d", chunks.get("block_count", 0), chunks.get("total_chars", 0))
+        val = chunks.get("validation", {})
+        if not val.get("passed"):
+            for issue in val.get("issues", []):
+                log.warning("      validation: %s", issue)
+    except Exception as exc:
+        log.warning("      Guardian LLM failed (%s); falling back to stub", exc)
+        chunks = _stub_guardian(guardian_input)
+        log.info("      Guardian stub: blocks=%d chars=%d", chunks.get("block_count", 0), chunks.get("total_chars", 0))
+        val = chunks.get("validation", {})
+        if not val.get("passed"):
+            for issue in val.get("issues", []):
+                log.warning("      validation: %s", issue)
+
+    if dry_run:
+        log.info("  [DRY-RUN] skip publicacion y update de estado")
+        PASSED.append(f"dryrun {page['id']}")
+        return
+
+    # Para db_ideas legacy: crear relacion con la idea original
+    if db_key == "db_ideas":
         try:
             _req("PATCH", f"/pages/{target_publish_id}", {
                 "properties": {
