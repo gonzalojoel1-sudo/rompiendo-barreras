@@ -1,0 +1,79 @@
+[
+  {
+    "label": "db_M0",
+    "name": "M0 \u00b7 Onboarding",
+    "id": "3aacfb86-8e33-81f7-817e-c2dfe451cf94",
+    "url": "https://app.notion.com/p/3aacfb868e3381f7817ec2dfe451cf94",
+    "title": "M0 \u00b7 Onboarding"
+  },
+  {
+    "label": "db_P1",
+    "name": "P1 \u00b7 Casa de Gobierno",
+    "id": "3aacfb86-8e33-81c1-97e9-e191cb5c0652",
+    "url": "https://app.notion.com/p/3aacfb868e3381c197e9e191cb5c0652",
+    "title": "P1 \u00b7 Casa de Gobierno"
+  },
+  {
+    "label": "db_P2",
+    "name": "P2 \u00b7 Mentalidad de Reino",
+    "id": "3aacfb86-8e33-810d-b998-e656dafb6981",
+    "url": "https://app.notion.com/p/3aacfb868e33810db998e656dafb6981",
+    "title": "P2 \u00b7 Mentalidad de Reino"
+  },
+  {
+    "label": "db_P3",
+    "name": "P3 \u00b7 H\u00e1bitos del \u00c9xito",
+    "id": "3aacfb86-8e33-81d1-b0d4-d9bcc5aa4c06",
+    "url": "https://app.notion.com/p/3aacfb868e3381d1b0d4d9bcc5aa4c06",
+    "title": "P3 \u00b7 H\u00e1bitos del \u00c9xito"
+  },
+  {
+    "label": "db_P4",
+    "name": "P4 \u00b7 Mayordom\u00eda Responsable",
+    "id": "3aacfb86-8e33-81fc-adaa-f4228becc3c7",
+    "url": "https://app.notion.com/p/3aacfb868e3381fcadaaf4228becc3c7",
+    "title": "P4 \u00b7 Mayordom\u00eda Responsable"
+  },
+  {
+    "label": "db_P5",
+    "name": "P5 \u00b7 Trabajo y Prop\u00f3sito",
+    "id": "3aacfb86-8e33-816c-aa31-c9dff7dcf822",
+    "url": "https://app.notion.com/p/3aacfb868e33816caa31c9dff7dcf822",
+    "title": "P5 \u00b7 Trabajo y Prop\u00f3sito"
+  },
+  {
+    "label": "db_P6",
+    "name": "P6 \u00b7 Modelado de Negocios",
+    "id": "3aacfb86-8e33-814b-8f6a-e42f762c1512",
+    "url": "https://app.notion.com/p/3aacfb868e33814b8f6ae42f762c1512",
+    "title": "P6 \u00b7 Modelado de Negocios"
+  },
+  {
+    "label": "db_P7",
+    "name": "P7 \u00b7 Expansi\u00f3n del Reino",
+    "id": "3aacfb86-8e33-81bb-b6d4-c5c72cb1252f",
+    "url": "https://app.notion.com/p/3aacfb868e3381bbb6d4c5c72cb1252f",
+    "title": "P7 \u00b7 Expansi\u00f3n del Reino"
+  },
+  {
+    "label": "db_anuncios",
+    "name": "Matriz de Anuncios",
+    "id": "3a8cfb86-8e33-8128-b27b-ca8b329a7f80",
+    "url": "",
+    "title": "Matriz de Anuncios (legacy)"
+  },
+  {
+    "label": "db_tareas",
+    "name": "Tareas y Roadmap",
+    "id": "3a8cfb86-8e33-814c-a4b0-f060e57dfe8b",
+    "url": "",
+    "title": "Tareas y Roadmap (legacy)"
+  },
+  {
+    "label": "db_alumnos",
+    "name": "Control de Alumnos",
+    "id": "3a8cfb86-8e33-8138-bbd8-d4d9538f2e45",
+    "url": "",
+    "title": "Control de Alumnos (legacy)"
+  }
+]

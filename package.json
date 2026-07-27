@@ -1,0 +1,7 @@
+{
+  "name": "gcloud-installer",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "bash install_gcloud.sh"
+  }
+}

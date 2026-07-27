@@ -1,0 +1,26 @@
+[
+  {
+    "type": "LESSON_SCRIPT_UPDATED",
+    "db": "DB1",
+    "page_id": "3a8cfb86-8e33-8119-93e4-d048c92d2816",
+    "url": "https://app.notion.com/p/M-dulo-0-Bienvenido-a-la-Misi-n-Activa-tu-Primera-Victoria-3a8cfb868e33811993e4d048c92d2816",
+    "title": "Módulo 0: Bienvenido a la Misión — Activa tu Primera Victoria",
+    "marker": "M0_BIENVENIDA_LESSON"
+  },
+  {
+    "type": "AD_LAUNCHED",
+    "db": "DB2",
+    "page_id": "3a8cfb86-8e33-814c-aa62-ccf146e53a6e",
+    "url": "https://app.notion.com/p/AD_AV1_HOOK1_PAZ_FAMILIA_V1-3a8cfb868e33814caa62ccf146e53a6e",
+    "title": "AD_AV1_HOOK1_PAZ_FAMILIA_V1",
+    "marker": "AD_AV1_HOOK1_PAZ_FAMILIA_V1"
+  },
+  {
+    "type": "AD_LAUNCHED",
+    "db": "DB2",
+    "page_id": "3a8cfb86-8e33-81fd-8a81-f987f03cb036",
+    "url": "https://app.notion.com/p/AD_AV2_HOOK3_JOSE_ARIMATEA_V1-3a8cfb868e3381fd8a81f987f03cb036",
+    "title": "AD_AV2_HOOK3_JOSE_ARIMATEA_V1",
+    "marker": "AD_AV2_HOOK3_JOSE_ARIMATEA_V1"
+  }
+]

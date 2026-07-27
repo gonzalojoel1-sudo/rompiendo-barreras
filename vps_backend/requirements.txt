@@ -1,0 +1,42 @@
+# =============================================================================
+# Rompiendo Barreras - vps_backend/ - Dependencias Python
+# =============================================================================
+# Generado: 2025-07-25
+# Python target: 3.11+
+# Stack: FastAPI + Orca bridge + (futuro) SQL + auth + email + pagos
+# =============================================================================
+
+# ---- [ACTUAL] Bridge Orca -> memoria jerárquica ----
+fastapi>=0.110.0          # Web framework (orca_memory_bridge.py)
+uvicorn[standard]>=0.27.0 # ASGI server para producción
+pydantic>=2.6.0           # Validación de payloads
+openai>=1.30.0            # Cliente OpenAI (memory_manager.py)
+requests>=2.31.0          # HTTP client (resiliencia y llamadas externas)
+python-dotenv>=1.0.0      # Carga .env en el proceso
+filelock>=3.12.0          # Escritura atomica del scratchpad (Sprint 2)
+
+# ---- [ACTUAL] Bot de Telegram (Sprint 7) ----
+python-telegram-bot>=21.0,<22.0  # Marco + Gemini audio transcription for Marcos
+google-auth>=2.30.0              # Vertex AI service account auth (incluye google-auth-requests)
+
+# ---- [ACTUAL] Notion bridge (Sprint 1) [Sprint 2 ya integrado] ----
+notion-client>=2.2.0,<3.0.0  # SDK oficial Notion (mismo pin que notion_bridge/)
+
+# ---- [FUTURO - spec sección 3.1] Auth JWT alumnos ----
+python-jose[cryptography]>=3.3.0   # Firmar/verificar tokens JWT
+passlib[bcrypt]>=1.7.4             # Hashing de contraseñas
+email-validator>=2.1.0             # Validación EmailStr en Pydantic
+
+# ---- [FUTURO - spec sección 2] Persistencia SQL ----
+SQLAlchemy>=2.0.0         # ORM
+alembic>=1.13.0           # Migraciones
+aiosqlite>=0.20.0         # Driver async SQLite (dev)
+psycopg2-binary>=2.9.9    # Driver Postgres (prod)
+
+# ---- [FUTURO - spec sección 3.2] Email de bienvenida ----
+# aiosmtplib>=3.0.0      # Cliente SMTP async
+# sendgrid>=6.11.0        # Alternativa: proveedor transaccional
+
+# ---- [FUTURO - spec sección 3.2] Pasarelas de pago ----
+# mercadopago>=2.1.0     # SDK no-oficial MP
+# stripe>=9.0.0           # SDK oficial

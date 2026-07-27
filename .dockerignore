@@ -1,0 +1,51 @@
+# =============================================================================
+# .dockerignore - Archivos excluidos del build context
+# =============================================================================
+
+# Entornos y caches
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.venv
+venv
+env
+
+# Secretos (NUNCA al imagen)
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+
+# Git y metadata
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+.DS_Store
+
+# Documentacion y assets no necesarios en runtime
+docs/
+*.md
+!vps_backend/DEPLOYMENT_PLAN.md
+
+# Tests (no necesarios en imagen de produccion)
+tests/
+**/tests/
+
+# NOTA: scripts/ NO se excluye - run_hybrid_squad.py es invocado por el
+# BackgroundTask del endpoint /api/v1/orca/webhook/trigger (action=process_approved).
+# Necesita estar disponible en /app/scripts/run_hybrid_squad.py dentro del contenedor.
+
+# Archivos de agentes y orquestador
+AGENTS.md
+CLAUDE.md

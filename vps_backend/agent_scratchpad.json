@@ -1,0 +1,29 @@
+{
+  "proyecto": "Rompiendo Barreras",
+  "fase_actual": "Lanzamiento MVP (Día -4 a Día 0)",
+  "objetivo_activo": "Desplegar Módulo 0 (Onboarding) y Pilar 1 con Meta Ads activos",
+  "decisiones_clave": [
+    "Matrícula fija de $97 USD que desbloquea Onboarding y Pilar 1",
+    "Suscripciones mensuales: $15 (Emprendedor), $35 (Estratégico) y $95 (Elite)",
+    "Pacto Anual VIP: $150, $350 y $950 USD/año con Kit Físico (Mate/Remera) y 2 meses gratis",
+    "Arquitectura técnica: Servidor VPS $5 USD/mes (Ubuntu + Nginx) + Bunny Stream para video",
+    "Bolsa de Trabajo del Reino activada en Semana 13 (Alumnos) y Semana 19 (Empresarios)",
+    "Cierre de ventas consultivo 100% manual vía chat de WhatsApp"
+  ],
+  "hitos_completados": [
+    "Auditoría y cierre del Documento Único v6",
+    "Especificación de arquitectura web (arquitecturaweb.md)",
+    "Diseño de prompts de sistema para 4 agentes de Orca (prompts_agentes_orca.md)",
+    "Definición de esquemas para Notion API (notion_schema.md)",
+    "Definición de esquema de Base de Datos SQL y API para VPS (vps_backend_spec.md)",
+    "Redacción de 8 guiones de grabación para Onboarding (guiones_onboarding_mvp.md)"
+  ],
+  "hitos_pendientes": [
+    "Grabar los 8 videos del Módulo 0 (Marcos)",
+    "Crear las 4 Bases de Datos en Notion y vincular integración con Orca",
+    "Desplegar Nginx, SSL y API Python en el servidor VPS de $5 USD",
+    "Subir videos a Bunny Stream y configurar Allowed Domains",
+    "Lanzar campañas de prueba en Meta Ads ($10-$15 USD/día)"
+  ],
+  "contexto_dinamico": "Ecosistema documental finalizado. Iniciando despliegue de infraestructura y grabación de MVP."
+}

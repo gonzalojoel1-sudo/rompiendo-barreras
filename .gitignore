@@ -1,0 +1,160 @@
+# =============================================================================
+# .gitignore - Archivos excluidos del repositorio Git
+# =============================================================================
+# Git y Docker comparten .dockerignore pero .gitignore es para el repo.
+
+# ─── Entornos y caches Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.python-version
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.coverage_report/
+.cache/
+.pytest_cache/
+
+# ─── Entornos virtuales ───────────────────────────────────────────────────
+.venv/
+venv/
+env/
+env.bak/
+.python-version
+poetry.lock.bak
+.pdm.toml.enc
+
+# ─── Secretos (NUNCA al repo) ────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.cert
+*.crt
+*.p12
+secrets/
+service-account*.json
+credentials*.json
+*-credentials.json
+gcp-*.json
+*-sa.json
+google-credentials.json
+/secrets
+/secrets/
+
+# ─── Logs y runtime ─────────────────────────────────────────────────────────
+logs/
+*.log
+*.log.*
+*.pid
+*.seed
+*.pid.lock
+.envrc
+.env.bak
+
+# ─── Sistema y metadata ─────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Tt]humbs.db
+[Dd]esktop.ini
+
+# ─── IDE / editores ─────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pyre_configuration.json
+.spyproject
+.spyderworkspace
+.cproject
+.platformio/
+
+# ─── Cobertura y profiling ──────────────────────────────────────────────────
+.coverage
+coverage.xml
+*.cover
+.pytest_cache/
+.tox/
+*.py,cover
+hypothesis/
+
+# ─── Archivos generados / build ─────────────────────────────────────────────
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+__pypackages__/
+*.local
+.cache/
+
+# ─── K8s / terraform / infra (NO en repo principal) ─────────────────────────
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+
+# ─── Notion API artifacts (no para repo) ───────────────────────────────────
+*.notion-cache
+
+# ─── Docker ────────────────────────────────────────────────────────────────
+# (El .dockerignore se encarga; aqui solo basura del host)
+Dockerfile.*.tmp
+
+# ─── Documentos pesados de la romana ──────────────────────────────────────
+# (Original Word/Excel se suben a Notion, no al repo)
+*.docx
+*.xlsx
+*.pptx
+
+# ─── Backup del sistema ────────────────────────────────────────────────────
+*.bak
+*~
+*.swp
+*.tmp
+*.temp
+*.orig
+*.rej
+*.orig
+
+# ─── Binarios compilados ───────────────────────────────────────────────────
+*.so
+*.dylib
+*.dll
+
+# ─── MacOS especifico ─────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.TempItemHermes
+.quarantine
+.temporary
+
+# ─── Linux especifico ─────────────────────────────────────────────────────
+.fuse_hidden*
+.idea/
+.tmp/
+.Trash-*
+
+# ─── Nuestra app ──────────────────────────────────────────────────────────
+/tmp/rb_deploy.tar.gz
+/rebrand_dashboard.py
