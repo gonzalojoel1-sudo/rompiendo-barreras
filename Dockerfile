@@ -39,7 +39,7 @@ RUN pip install --no-cache-dir -r /app/vps_backend/requirements.txt \
     && pip install --no-cache-dir "uvicorn[standard]>=0.27.0"
 
 # --- Capa 2: codigo de la aplicacion ---
-COPY rb_notion_bridge /app/rb_notion_bridge
+COPY notion_bridge /app/notion_bridge
 COPY vps_backend  /app/vps_backend
 COPY manifests    /app/manifests
 COPY config       /app/config
