@@ -650,15 +650,15 @@ python3 -c "from vps_backend.orchestrator import generate_surgical_briefs"
 
 ## 📌 Estado Global — Fase 4
 
-| Paso | Descripción | Estado |
-|------|-------------|--------|
-| 1 | Remover credentials hardcodeadas | ⏳ PENDIENTE |
-| 2 | Corregir bugs críticos de código | ⏳ PENDIENTE |
-| 3 | Testear pipeline de agentes | ⏳ PENDIENTE |
-| 4 | Implementar backoff y retry | ⏳ PENDIENTE |
-| 5 | Limpiar duplicación y código muerto | ⏳ PENDIENTE |
-| 6 | Corregir documentación | ⏳ PENDIENTE |
-| 7 | CI/CD con GitHub Actions | ⏳ PENDIENTE |
+| Paso | Descripción | Estado | Notas |
+|------|-------------|--------|-------|
+| 1 | Remover credentials hardcodeadas | ✅ COMPLETADO | secrets/SECRETS.md creado, tokens de scripts corregidos |
+| 2 | Corregir bugs críticos de código | ✅ COMPLETADO | C-01 a C-07 resueltos |
+| 3 | Testear pipeline de agentes | ✅ COMPLETADO | Docker rebuild + deploy OK, hydrate funciona |
+| 4 | Implementar backoff y retry | ✅ COMPLETADO | polling 60→300s, sync 5 retries, circuit breaker |
+| 5 | Limpiar duplicación y código muerto | ✅ COMPLETADO | rb_notion_bridge eliminado, notion_bridge unificado |
+| 6 | Corregir documentación | ✅ COMPLETADO | fase3.md sincronizado, AGENTS.md actualizado |
+| 7 | CI/CD con GitHub Actions | ⏳ PENDIENTE | No implementado aún |
 
 ---
 
@@ -677,13 +677,23 @@ python3 -c "from vps_backend.orchestrator import generate_surgical_briefs"
 
 ## ✅ Check-list de Cierre de Fase 4
 
-- [ ] Todos los tokens hardcodeados eliminados
-- [ ] Secrets movidos a `secrets/SECRETS.md`
-- [ ] Bug 1 (prompt) testeado con resultado 9/10
-- [ ] Bug 3 (Docker) rebuild y deployado
-- [ ] Código unreachable en run_hybrid_squad.py corregido
-- [ ] iteration undefined corregido en tools.py
-- [ ] Backoff implementado en polling y sync
-- [ ] notion_bridge unificado (rb_notion_bridge eliminado)
-- [ ] fase3.md sincronizado
+- [x] Todos los tokens hardcodeados eliminados
+- [x] Secrets movidos a `secrets/SECRETS.md`
+- [x] Bug 1 (prompt) testeado con resultado 9/10
+- [x] Bug 3 (Docker) rebuild y deployado
+- [x] Código unreachable en run_hybrid_squad.py corregido
+- [x] iteration undefined corregido en tools.py
+- [x] Backoff implementado en polling y sync
+- [x] notion_bridge unificado (rb_notion_bridge eliminado)
+- [x] fase3.md sincronizado
 - [ ] GitHub Actions deploy workflow creado
+
+---
+
+## 🔗 Commits de Fase 4
+
+| Commit | Descripción |
+|--------|-------------|
+| `8aa052f` | Fase 4: Security fixes - remove hardcoded credentials, command injection, undefined vars |
+| `23f26be` | Fase 4: Important fixes - backoff, retries, unificación, prompts, limits |
+| `d857106` | Fix Dockerfile: rb_notion_bridge -> notion_bridge |
