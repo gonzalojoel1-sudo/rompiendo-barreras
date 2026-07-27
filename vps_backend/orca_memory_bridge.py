@@ -62,7 +62,9 @@ BASE_DIR = Path(__file__).resolve().parent
 ROOT = BASE_DIR.parent
 MANIFEST_PATH = ROOT / "manifests" / "notion_databases_manifest.json"
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "tu_openai_api_key_aqui")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise RuntimeError("OPENAI_API_KEY environment variable is required")
 ORCA_API_KEY = os.getenv("ORCA_API_KEY", "")
 NOTION_API_KEY = os.getenv("NOTION_API_KEY", "")
 SCRATCHPAD_PATH = os.getenv(

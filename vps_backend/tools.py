@@ -491,7 +491,7 @@ def _call_vertex_with_tools(
         elif "functionCall" in part:
             fc = part["functionCall"]
             function_calls.append({
-                "id": f"fc_{iteration}_{i}",
+                "id": f"fc_{i}",
                 "type": "function",
                 "function": {
                     "name": fc["name"],

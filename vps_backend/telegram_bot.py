@@ -63,10 +63,9 @@ ALLOWED_CHAT_IDS: set[int] = {
 ORCHESTRATOR_SCRIPT = PROJECT_ROOT / "scripts" / "run_hybrid_squad.py"
 NOTION_API_KEY = os.getenv("NOTION_API_KEY", "").strip().strip('"').strip("'")
 IDEAS_DB_ID = os.getenv("IDEAS_DB_ID", "3aacfb86-8e33-8154-8cfe-e473b3f48aae").strip()
-GUIÓN_TRIGGER_URL = os.getenv(
-    "WEBHOOK_TRIGGER_URL",
-    "https://136.111.55.189.sslip.io/api/v1/orca/webhook/trigger",
-).strip()
+WEBHOOK_TRIGGER_URL = os.getenv("WEBHOOK_TRIGGER_URL")
+if not WEBHOOK_TRIGGER_URL:
+    raise RuntimeError("WEBHOOK_TRIGGER_URL environment variable is required")
 ORCA_API_KEY_HEADER = os.getenv("ORCA_API_KEY", "test_orca_api_key_32chars_minimum_aaaa").strip()
 
 # Estado en memoria de paginas ya procesadas (para no reprocesar)
@@ -76,8 +75,8 @@ _PROCESSED_IDS: set[str] = set()
 def _is_authorized(update: Any) -> bool:
     """Retorna True si el update proviene de un chat autorizado."""
     if not ALLOWED_CHAT_IDS:
-        # Si no hay whitelist, dejamos pasar (modo dev). En produccion siempre setear.
-        return True
+        log.error("TELEGRAM_ALLOWED_CHAT_IDS no configurado - request rechazado")
+        return False
     chat = getattr(update, "effective_chat", None)
     if chat is None:
         return False
@@ -89,10 +88,20 @@ def _is_authorized(update: Any) -> bool:
 # =============================================================================
 
 
+def _sanitize_topic(topic: str) -> str:
+    """Solo permite alfanuméricos, espacios, tildes, y caracteres -_,."""
+    sanitized = re.sub(r"[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ,.:;!?¡¿\-_()]", "", topic)
+    return sanitized.strip()
+
+
 def run_ideate(topic: str) -> tuple[int, str, str]:
     """Ejecuta run_hybrid_squad.py --mode=ideate con el tema dado.
     Retorna (returncode, stdout, stderr).
     """
+    sanitized_topic = _sanitize_topic(topic)
+    if not sanitized_topic:
+        return 1, "", "Topic inválido o vacío"
+
     if not ORCHESTRATOR_SCRIPT.exists():
         return 1, "", f"Script no encontrado: {ORCHESTRATOR_SCRIPT}"
 
@@ -100,7 +109,7 @@ def run_ideate(topic: str) -> tuple[int, str, str]:
         "python3",
         str(ORCHESTRATOR_SCRIPT),
         "--mode=ideate",
-        f"--topic={topic}",
+        f"--topic={sanitized_topic}",
     ]
     log.info("Ejecutando ideate: %s", " ".join(cmd))
     try:
@@ -220,7 +229,7 @@ def trigger_process_approved(page_ids: list[str], all_approved: bool = False) ->
         },
     }
     req = urllib.request.Request(
-        GUIÓN_TRIGGER_URL, method="POST", data=json.dumps(payload).encode()
+        WEBHOOK_TRIGGER_URL, method="POST", data=json.dumps(payload).encode()
     )
     req.add_header("X-Orca-API-Key", ORCA_API_KEY_HEADER)
     req.add_header("Content-Type", "application/json")

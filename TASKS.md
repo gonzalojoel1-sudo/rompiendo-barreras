@@ -46,7 +46,7 @@ del búnker via `read_bunker_file()` y `list_bunker_files()`. Ambos providers
 ```bash
 # Resetear + disparar + esperar
 curl -s -X PATCH "https://api.notion.com/v1/pages/3aacfb86-8e33-81a2-be2f-ce40e371a50a" \
-  -H "Authorization: Bearer ntn_REDACTED_LEAK_2026-07-28" \
+  -H "Authorization: Bearer <NOTION_API_KEY>" \
   -H "Notion-Version: 2022-06-28" -H "Content-Type: application/json" \
   -d '{"properties":{"Estado":{"status":{"name":"📝 Guion Aprobado"}}}}'
 curl -s -X POST https://136.111.55.189.sslip.io/api/v1/orca/webhook/trigger \
@@ -238,16 +238,16 @@ jobs:
 
 ## 📞 Contactos y credenciales (resumen)
 
-| Recurso | Valor |
+> **⚠️ ATENCIÓN:** Las credenciales reales están en `secrets/SECRETS.md` (NO commitear).
+
+| Recurso | Ubicación |
 |---|---|
-| GitHub user | `gonzalojoel1-sudo` (cuenta sudo) |
-| Repo | `github.com/gonzalojoel1-sudo/rompiendo-barreras` (privado) |
-| Notion API | `ntn_REDACTED_LEAK_2026-07-28` |
-| MiniMax API | `sk-cp_REDACTED_LEAK_2026-07-28` |
-| Vertex AI Service Account | `cs-project_REDACTED_LEAK_2026-07-28` (region: global) |
-| Telegram bot | `@RompiendoBarreras_bot` (token: REDACTED_LEAK_2026-07-28_TELEGRAM) |
-| VM | 136.111.55.189, user `gonzalojoel1_gmail_com` |
-| SSH key | `~/.ssh/id_rsa_oracle` (en la Mac) |
+| GitHub | `secrets/SECRETS.md` |
+| Notion API | `secrets/SECRETS.md` |
+| MiniMax API | `secrets/SECRETS.md` |
+| Telegram bot | `secrets/SECRETS.md` |
+| Vertex SA | `secrets/SECRETS.md` |
+| VM SSH | `secrets/SECRETS.md` |
 
 ---
 

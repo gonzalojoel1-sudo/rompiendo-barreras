@@ -1180,8 +1180,10 @@ def mode_ideate(manifest: dict[str, str], topic: str, db_key: str = "db_M0", n_i
     try:
         # Importacion local para evitar ciclos en tiempo de import
         import sys
-        if "/Users/joelpacheco/PROYECTOS/rompiendo-barreras/vps_backend" not in sys.path:
-            sys.path.insert(0, "/Users/joelpacheco/PROYECTOS/rompiendo-barreras/vps_backend")
+        from pathlib import Path
+        PROJECT_ROOT = Path(__file__).resolve().parent.parent
+        if str(PROJECT_ROOT / "vps_backend") not in sys.path:
+            sys.path.insert(0, str(PROJECT_ROOT / "vps_backend"))
         from orchestrator import generate_surgical_briefs
         briefs = generate_surgical_briefs(topic)
         log.info("  briefs generados:")
@@ -1261,10 +1263,7 @@ def _create_idea_page(manifest: dict[str, str], idea: dict, week: str = None, **
     target = idea.get("target_db", "db_M0")
     db_id = manifest[target]
     properties: dict[str, Any] = {}
-    pilar = idea.get("pilar", "")  # extraer del idea dict
-    target = idea.get("target_db", "db_M0")
-    db_id = manifest[target]
-    properties: dict[str, Any] = {}
+    pilar = idea.get("pilar", "")
     if target.startswith("db_") and not target in ("db1", "db2", "db_ideas", "db_prod"):
         # Sprint 8: NUEVA estructura con 8 DBs por pilar
         # Cada DB tiene: Clase (title), Estado, Semana, Pilar, Tipo, Resumen, etc.

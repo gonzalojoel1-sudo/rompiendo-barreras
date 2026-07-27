@@ -203,8 +203,14 @@ class HierarchicalMemoryManager:
                 response_format={"type": "json_object"},
             )
             updated = json.loads(res.choices[0].message.content)
-            self.scratchpad = updated
-            self.save_scratchpad()
-            logger.info("memory_manager.auto_compact ok")
+            required_keys = {"proyecto", "fase_actual", "decisiones_clave", "hitos_pendientes", "hitos_completados"}
+            if isinstance(updated, dict) and required_keys.issubset(updated.keys()):
+                self.scratchpad = updated
+                self.save_scratchpad()
+                logger.info("memory_manager.auto_compact ok")
+            else:
+                logger.warning("memory_manager.auto_compact: schema inesperado, manteniendo estado anterior")
+        except json.JSONDecodeError as exc:
+            logger.warning("memory_manager.auto_compact: JSON inválido del LLM, err=%s", exc)
         except Exception as exc:
             logger.warning("memory_manager.auto_compact.error err=%s", exc)
