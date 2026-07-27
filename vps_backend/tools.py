@@ -144,7 +144,7 @@ def read_notion_page(page_id: str) -> dict[str, Any]:
         content_parts = []
         with urllib.request.urlopen(req2, timeout=15) as resp2:
             blocks = json.loads(resp2.read())
-            for block in blocks.get("results", [])[:50]:
+            for block in blocks.get("results", [])[:200]:
                 btype = block.get("type", "")
                 if btype == "paragraph":
                     for t in block["paragraph"].get("rich_text", []):

@@ -77,8 +77,26 @@ services:
         source: ./logs
         target: /app/logs
       - type: bind
-        source: .
-        target: /app           # Necesita acceso a scripts/, context_vault/, etc.
+        source: ./vps_backend
+        target: /app/vps_backend
+      - type: bind
+        source: ./config
+        target: /app/config
+      - type: bind
+        source: ./scripts
+        target: /app/scripts
+      - type: bind
+        source: ./manifests
+        target: /app/manifests
+      - type: bind
+        source: ./context_vault
+        target: /app/context_vault
+      - type: bind
+        source: ./secrets
+        target: /app/secrets
+      - type: volume
+        source: vps_data
+        target: /app/data
     command: ["python3", "/app/vps_backend/telegram_bot.py"]
 
 volumes:

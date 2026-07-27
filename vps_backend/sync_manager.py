@@ -13,8 +13,8 @@ import os
 from pathlib import Path
 from typing import Any
 
-from rb_notion_bridge import CachedSchemaService, NotionClient
-from rb_notion_bridge.config import NotionBridgeConfig
+from notion_bridge import CachedSchemaService, NotionClient
+from notion_bridge.config import NotionBridgeConfig
 
 logger = logging.getLogger(__name__)
 
@@ -161,14 +161,30 @@ class MemorySyncManager:
         synced = 0
         failed = 0
         for event in pending:
-            try:
-                self._sync_event_to_notion(event)
-                self._memory.dequeue_notion_synced(event)
-                synced += 1
-            except Exception as exc:
-                event["attempts"] = event.get("attempts", 0) + 1
-                failed += 1
-                logger.warning("sync_manager.flush.event_failed err=%s", exc)
+            max_retries = 5
+            backoff = 1
+            for attempt in range(max_retries):
+                try:
+                    self._sync_event_to_notion(event)
+                    self._memory.dequeue_notion_synced(event)
+                    synced += 1
+                    break
+                except Exception as exc:
+                    is_rate_limit = (
+                        getattr(exc, "status", None) == 429
+                        or "429" in str(exc)
+                        or "rate limit" in str(exc).lower()
+                    )
+                    if is_rate_limit and attempt < max_retries - 1:
+                        logger.warning("sync_manager.flush.rate_limited attempt=%d backoff=%ds", attempt + 1, backoff)
+                        import time
+                        time.sleep(backoff)
+                        backoff = min(backoff * 2, 60)
+                    else:
+                        event["attempts"] = event.get("attempts", 0) + 1
+                        failed += 1
+                        logger.warning("sync_manager.flush.event_failed err=%s", exc)
+                        break
 
         remaining = len(self._memory.scratchpad.get("notion_sync_pending", []))
         logger.info(

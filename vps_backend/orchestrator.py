@@ -105,7 +105,7 @@ def generate_surgical_briefs(user_goal: str) -> dict[str, str]:
             "strategist_brief, copywriter_brief) en formato JSON estricto."
         ),
         json_mode=True,
-        max_retries=1,
+        max_retries=3,
     )
 
     # Sanitiza thinking traces (minimax puede emitir <think>) y parsea

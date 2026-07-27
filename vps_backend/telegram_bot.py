@@ -62,8 +62,12 @@ ALLOWED_CHAT_IDS: set[int] = {
 
 ORCHESTRATOR_SCRIPT = PROJECT_ROOT / "scripts" / "run_hybrid_squad.py"
 NOTION_API_KEY = os.getenv("NOTION_API_KEY", "").strip().strip('"').strip("'")
-IDEAS_DB_ID = os.getenv("IDEAS_DB_ID", "3aacfb86-8e33-8154-8cfe-e473b3f48aae").strip()
+IDEAS_DB_ID = os.getenv("IDEAS_DB_ID", "").strip()
 WEBHOOK_TRIGGER_URL = os.getenv("WEBHOOK_TRIGGER_URL")
+
+MANIFEST_PATH = PROJECT_ROOT / "manifests" / "notion_databases_manifest.json"
+with open(MANIFEST_PATH) as f:
+    NOTION_DATABASES = {db["label"]: db for db in json.load(f)}
 if not WEBHOOK_TRIGGER_URL:
     raise RuntimeError("WEBHOOK_TRIGGER_URL environment variable is required")
 ORCA_API_KEY_HEADER = os.getenv("ORCA_API_KEY", "test_orca_api_key_32chars_minimum_aaaa").strip()
@@ -166,17 +170,8 @@ def query_approved_ideas() -> list[dict]:
         log.warning("NOTION_API_KEY no configurada, polling desactivado")
         return []
 
-    # 8 DBs del nuevo esquema (cargadas del manifest)
-    pilars_dbs = [
-        "3aacfb86-8e33-81f7-817e-c2dfe451cf94",  # db_M0
-        "3aacfb86-8e33-81c1-97e9-e191cb5c0652",  # db_P1
-        "3aacfb86-8e33-810d-b998-e656dafb6981",  # db_P2
-        "3aacfb86-8e33-81d1-b0d4-d9bcc5aa4c06",  # db_P3
-        "3aacfb86-8e33-81fc-adaa-f4228becc3c7",  # db_P4
-        "3aacfb86-8e33-816c-aa31-c9dff7dcf822",  # db_P5
-        "3aacfb86-8e33-814b-8f6a-e42f762c1512",  # db_P6
-        "3aacfb86-8e33-81bb-b6d4-c5c72cb1252f",  # db_P7
-    ]
+    pilar_labels = ["db_M0", "db_P1", "db_P2", "db_P3", "db_P4", "db_P5", "db_P6", "db_P7"]
+    pilars_dbs = [NOTION_DATABASES[lbl]["id"] for lbl in pilar_labels]
 
     payload = {
         "filter": {
@@ -252,9 +247,10 @@ async def poll_approved_ideas_task(context) -> None:
         _PROCESSED_IDS.add(e["id"])
     log.info("Polling iniciado. %d ideas ya aprobadas (no se reprocesan)", len(existing))
 
+    backoff = 60
+    max_backoff = 300
     while True:
         try:
-            await asyncio.sleep(60)
             new_approved = query_approved_ideas()
             for item in new_approved:
                 pid = item["id"]
@@ -264,7 +260,6 @@ async def poll_approved_ideas_task(context) -> None:
                 log.info("Idea aprobada detectada: %s — %s [%s]", pid, item["title"][:50], item.get("pilar", ""))
                 status, body = trigger_process_approved([pid])
                 log.info("process_approved disparado: HTTP %s", status)
-                # Notificar a todos los chats autorizados
                 for chat_id in ALLOWED_CHAT_IDS or [0]:
                     if chat_id:
                         try:
@@ -282,9 +277,11 @@ async def poll_approved_ideas_task(context) -> None:
                             )
                         except Exception:
                             pass
+            backoff = 60
         except Exception as exc:
-            log.exception("Error en polling loop")
-            await asyncio.sleep(60)
+            backoff = min(backoff * 2, max_backoff)
+            log.exception("Error en polling loop, backoff=%ds", backoff)
+        await asyncio.sleep(backoff)
 
 
 # =============================================================================

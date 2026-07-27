@@ -52,8 +52,8 @@ from api_models import (  # noqa: E402
     WebhookTriggerResponse,
 )
 from memory_manager import HierarchicalMemoryManager  # noqa: E402
-from rb_notion_bridge import CachedSchemaService, NotionClient  # noqa: E402
-from rb_notion_bridge.config import NotionBridgeConfig  # noqa: E402
+from notion_bridge import CachedSchemaService, NotionClient  # noqa: E402
+from notion_bridge.config import NotionBridgeConfig  # noqa: E402
 from sync_manager import EVENT_TO_NOTION, MemorySyncManager  # noqa: E402
 
 logger = logging.getLogger(__name__)

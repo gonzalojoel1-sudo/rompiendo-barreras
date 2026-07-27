@@ -529,7 +529,10 @@ def _call_one(
     cfg["model"] = model
 
     last_exc: Exception | None = None
-    for attempt in range(1, max_retries + 2):
+    failure_count = 0
+    max_failures = 2
+
+    for attempt in range(1, max_retries + 3):
         try:
             return _dispatch(cfg, system_prompt, user_prompt, json_mode)
         except requests.HTTPError as exc:
@@ -543,6 +546,9 @@ def _call_one(
                 )
                 time.sleep(delay)
                 last_exc = exc
+                failure_count += 1
+                if failure_count >= max_failures:
+                    raise LLMError(f"Circuit breaker abierto tras {failure_count} fallos")
                 continue
             raise LLMError(
                 f"{provider}/{model} -> HTTP {status}: {body}"
@@ -556,6 +562,9 @@ def _call_one(
                 )
                 time.sleep(delay)
                 last_exc = exc
+                failure_count += 1
+                if failure_count >= max_failures:
+                    raise LLMError(f"Circuit breaker abierto tras {failure_count} fallos")
                 continue
             raise LLMError(f"{provider}/{model}: {exc}") from exc
     raise LLMError(f"{provider}/{model}: failed after retries: {last_exc}")

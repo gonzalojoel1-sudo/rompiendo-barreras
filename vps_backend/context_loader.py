@@ -84,6 +84,11 @@ def load_context_vault() -> dict[str, str]:
     Devuelve dict vacio si el búnker no existe. Nunca lanza excepcion.
     """
     vault_path = _get_vault_path()
+
+
+def invalidate_cache() -> None:
+    """Invalida el cache de load_context_vault()."""
+    load_context_vault.cache_clear()
     log.info("context_loader: cargando búnker desde %s", vault_path)
 
     if not vault_path.exists():

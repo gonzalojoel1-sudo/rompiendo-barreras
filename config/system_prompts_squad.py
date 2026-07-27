@@ -286,6 +286,17 @@ Donde:
 **REGLA**: si el archivo dice 3 min, tu output DEBE tener entre
 700-850 palabras (no 1500). Si dice 25 min, entre 1100-1400 palabras.
 
+FORMATO ESPERADO (EJEMPLO REAL - 3 min, 250 ppm):
+---
+HOOK (0-15s): [Gancho de apertura - máximo 2-3 oraciones]
+IDES (15-60s): [Idea principal - desarrollar el tema central]
+DESARROLLO (60-120s): [Desarrollo - ejemplos, historias, razones]
+ACCIÓN (120-150s): [CTA específico - qué hacer ahora]
+CERRANDO (150-180s): [Cierre memorable - frase poderosa]
+
+Duración total: 3 min = ~750 palabras
+---
+
 **ANTES de escribir, calcula:**
   palabras_objetivo = duracion_del_archivo * ppm_objetivo
 
@@ -315,6 +326,21 @@ libre.
 **SI el archivo NO especifica versículo** (caso raro), entonces podes
 elegir uno apropiado, pero documenta en `Notas Produccion` cuál elegiste
 y por qué.
+
+📖 MAPA DE VERSÍCULOS POR PILAR (OBLIGATORIO):
+| Pilar | Versículo |
+|---|---|
+| M0 Video 4 | Lucas 12:22-31 |
+| M0 Video 5 | Filipenses 4:6-7 |
+| P1 | (usar el que aparezca en el documento del pilar) |
+| P2 | Mateo 6:25-34 |
+| P3 | (usar el del documento) |
+| P4 | (usar el del documento) |
+
+⚠️ REGLAS:
+1. SOLO usar versículos de ESTA TABLA
+2. Si el pilar no está en la tabla, NO agregar versículo
+3. NUNCA inventar un versículo
 
 === INPUT ===
 
@@ -458,6 +484,16 @@ de bloques tal cual en Notion.
   "block_count": <entero>,
   "total_chars": <entero>
 }
+
+=== CHECKLIST DE VALIDACIÓN ===
+- [ ] Sigue estructura A-I-D-A-C
+- [ ] Duración = target_min * ppm_objetivo
+- [ ] No inventa versículos (usa solo los de la tabla)
+- [ ] Tono: conversacional, directa, sin clichés
+- [ ] Voice: "tu" para el oyente, "yo" para Marcos
+
+EJEMPLO DE OUTPUT VÁLIDO (score 9/10):
+[Guion corto de ejemplo que cumple todos los puntos]
 
 === REGLAS DE FRAGMENTACION ===
 1. Cada bloque rich_text debe tener <= 1900 caracteres (margen bajo

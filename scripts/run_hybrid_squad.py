@@ -848,16 +848,14 @@ def _class_generica(title: str, description: str = "", angle: str = "") -> str:
     )
 
 
-def _generate_ad_content(title: str, description: str, angle: str) -> str:
-    """Stub para anuncios (DB2)."""
-    return (
-        f"HOOK (0-5s):\nTienes un negocio pero Dios no es el CEO. Y lo sabes.\n\n"
-        "CUERPO (5-25s):\nEn 6 meses podes tener la casa de gobierno que tu negocio "
-        "necesita: autodominio, codigo de honor, y a Dios como autoridad maxima. "
-        "Lo que otros construyen a base de burnout, vos lo podes construir con orden.\n\n"
-        "CTA (25-30s):\nRompiendo Barreras. Programa de 6 meses. Inscripcion $97 + "
-        "$15 al mes. Garantia real de 7 dias. Link en el perfil."
-    )
+def _generate_ad_content(topic: str, target_db: str = "db_M0") -> str:
+    """Genera contenido de anuncio demo para pruebas."""
+    return f"""HOOK (0-5s): [Gancho intrigante sobre {topic}]
+IDEAS (5-30s): [Breve reflexión relacionada con el tema]
+CTA (30-60s): [Invitación a acción específica]
+
+Generado automáticamente para pruebas.
+"""
 
 
 

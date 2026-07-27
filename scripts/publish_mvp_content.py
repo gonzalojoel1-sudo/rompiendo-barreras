@@ -16,8 +16,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "vps_backend"))
 
-from rb_notion_bridge import CachedSchemaService, NotionClient  # noqa: E402
-from rb_notion_bridge.config import NotionBridgeConfig  # noqa: E402
+from notion_bridge import CachedSchemaService, NotionClient  # noqa: E402
+from notion_bridge.config import NotionBridgeConfig  # noqa: E402
 
 NOTION_TOKEN = os.getenv(
     "NOTION_API_KEY",
