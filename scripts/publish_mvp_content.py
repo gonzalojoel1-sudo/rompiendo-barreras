@@ -1,4 +1,6 @@
-"""publish_mvp_content.py - Publica la leccion del M0 y 2 anuncios en Notion.
+"""publish_mvp_content.py - OBSOLETO: MVP completado (05-jul-2026)
+
+Publica la leccion del M0 y 2 anuncios en Notion.
 
 Usa notion_bridge directamente (sin servidor HTTP) para minimizar superficie
 de fallo en la publicacion. El orquestador registra los eventos en el

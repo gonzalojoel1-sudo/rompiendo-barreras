@@ -7,6 +7,7 @@ database en un periodo corto. Es un cache de proceso (no distribuido).
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -39,45 +40,51 @@ class SchemaCache:
         self._store: dict[str, tuple[dict[str, Any], float]] = {}
         self._hits = 0
         self._misses = 0
+        self._lock = threading.Lock()
 
     @property
     def ttl_seconds(self) -> float:
         return self._ttl
 
     def get(self, database_id: str) -> dict[str, Any] | None:
-        entry = self._store.get(database_id)
-        if entry is None:
-            return None
-        schema, ts = entry
-        if (time.time() - ts) > self._ttl:
-            logger.info("schema_cache.expired database_id=%s", database_id)
-            self._store.pop(database_id, None)
-            return None
-        return schema
+        with self._lock:
+            entry = self._store.get(database_id)
+            if entry is None:
+                return None
+            schema, ts = entry
+            if (time.time() - ts) > self._ttl:
+                logger.info("schema_cache.expired database_id=%s", database_id)
+                self._store.pop(database_id, None)
+                return None
+            return schema
 
     def set(self, database_id: str, schema: dict[str, Any]) -> None:
-        self._store[database_id] = (schema, time.time())
-        logger.info("schema_cache.set database_id=%s", database_id)
+        with self._lock:
+            self._store[database_id] = (schema, time.time())
+            logger.info("schema_cache.set database_id=%s", database_id)
 
     def invalidate(self, database_id: str | None = None) -> int:
-        if database_id is None:
-            count = len(self._store)
-            self._store.clear()
-            logger.info("schema_cache.flush removed=%d", count)
-            return count
-        removed = self._store.pop(database_id, None)
-        if removed is not None:
-            logger.info("schema_cache.invalidate database_id=%s", database_id)
-            return 1
-        return 0
+        with self._lock:
+            if database_id is None:
+                count = len(self._store)
+                self._store.clear()
+                logger.info("schema_cache.flush removed=%d", count)
+                return count
+            removed = self._store.pop(database_id, None)
+            if removed is not None:
+                logger.info("schema_cache.invalidate database_id=%s", database_id)
+                return 1
+            return 0
 
     def record_hit(self, database_id: str) -> None:
-        self._hits += 1
-        logger.info("schema_cache.hit database_id=%s", database_id)
+        with self._lock:
+            self._hits += 1
+            logger.info("schema_cache.hit database_id=%s", database_id)
 
     def record_miss(self, database_id: str) -> None:
-        self._misses += 1
-        logger.info("schema_cache.miss database_id=%s", database_id)
+        with self._lock:
+            self._misses += 1
+            logger.info("schema_cache.miss database_id=%s", database_id)
 
     def stats(self) -> CacheStats:
         return CacheStats(

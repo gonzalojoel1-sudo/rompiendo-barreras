@@ -188,7 +188,7 @@ docker ps && curl -s https://136.111.55.189.sslip.io/health
 | Paso | Descripción | Estado |
 |------|-------------|--------|
 | 1 | Vinculación Automations Notion | ✅ COMPLETADO |
-| 2 | Ingesta / Hidratación | ⏳ PENDIENTE |
+| 2 | Ingesta / Hidratación | ✅ COMPLETADO |
 | 3 | Pipeline LLMs | ⏳ PENDIENTE |
 | 4 | Loop QA 9/10+ | ⏳ PENDIENTE |
 | 5 | Sincronización Final | ⏳ PENDIENTE |

@@ -7,9 +7,9 @@
 # =============================================================================
 
 # ---- [ACTUAL] Bridge Orca -> memoria jerárquica ----
-fastapi>=0.110.0          # Web framework (orca_memory_bridge.py)
-uvicorn[standard]>=0.27.0 # ASGI server para producción
-pydantic>=2.6.0           # Validación de payloads
+fastapi>=0.110.0,<0.115.0  # Web framework (orca_memory_bridge.py)
+uvicorn[standard]>=0.27.0,<0.30.0  # ASGI server para producción
+pydantic>=2.6.0,<3.0.0    # Validación de payloads
 openai>=1.30.0            # Cliente OpenAI (memory_manager.py)
 requests>=2.31.0          # HTTP client (resiliencia y llamadas externas)
 python-dotenv>=1.0.0      # Carga .env en el proceso

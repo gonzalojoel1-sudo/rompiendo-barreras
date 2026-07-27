@@ -1,4 +1,4 @@
-"""run_hybrid_squad.py - Orquestador del Squad de 4 subagentes.
+"""run_hybrid_squad.py - OBSOLETO: MVP completado (05-jul-2026) - Orquestador del Squad de 4 subagentes.
 
 Pipeline de Autonomia Hibrida en 2 etapas + admin:
 

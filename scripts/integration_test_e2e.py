@@ -1,4 +1,4 @@
-"""integration_test_e2e.py
+"""integration_test_e2e.py - OBSOLETO: MVP completado (05-jul-2026)
 
 Prueba de integracion end-to-end: Notion <-> Scripts locales.
 

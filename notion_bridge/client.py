@@ -5,6 +5,7 @@ errores tipados, retry ante 429/5xx y backoff exponencial.
 from __future__ import annotations
 
 import logging
+import random
 import time
 from typing import Any
 
@@ -142,7 +143,8 @@ class NotionClient:
 
     def _backoff(self, attempt: int) -> float:
         delay = self._config.backoff_base * (2 ** (attempt - 1))
-        return min(delay, self._config.backoff_max)
+        delay = min(delay, self._config.backoff_max)
+        return delay * (1 + random.uniform(0, 0.1))
 
     @staticmethod
     def _extract_status(exc: APIResponseError) -> int:

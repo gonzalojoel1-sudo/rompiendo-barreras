@@ -1,4 +1,6 @@
-"""update_notion_styling.py - Aplica la identidad visual Dark Premium al workspace.
+"""update_notion_styling.py - OBSOLETO: MVP completado (05-jul-2026)
+
+Aplica la identidad visual Dark Premium al workspace.
 
 Pasos:
     1. Set icon + cover en la pagina padre.

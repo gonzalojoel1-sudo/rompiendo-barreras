@@ -88,14 +88,19 @@ config/system_prompt_orquestador.md
 
 ```text
 rompiendo-barreras/
-├── AGENTS.md                              ← este archivo (constitución)
-├── docs/                                  ← estrategia, guiones, esquemas
+├── AGENTS.md                    ← este archivo (constitución)
+├── docs/                        ← estrategia, guiones, esquemas
 ├── config/
-│   ├── prompts_agentes_orca.md            ← system prompts Agentes 1-4
-│   └── system_prompt_orquestador.md       ← plantilla para subagentes
-├── scripts/                               ← utilidades ejecutables
-├── manifests/                             ← outputs JSON de scripts
-└── vps_backend/                           ← código y memoria del VPS
+│   ├── prompts_agentes_orca.md  ← system prompts (Trend Hunter/Strategist/Copywriter/Brand Guardian)
+│   └── system_prompt_orquestador.md
+├── context_vault/               ← 6 archivos .md
+├── scripts/
+│   └── run_hybrid_squad.py      ← core pipeline
+├── manifests/                   ← outputs JSON
+├── notion_bridge/              ← cliente Notion
+├── vps_backend/                 ← código del VPS
+├── fase1.md / fase2.md / fase3.md / fase4.md
+└── TASKS.md                    ← backlog
 ```
 
 ---

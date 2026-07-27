@@ -74,6 +74,9 @@ class NotionBridgeService:
                 if not response.get("has_more"):
                     break
                 start_cursor = response.get("next_cursor")
+                if start_cursor is None and response.get("has_more"):
+                    logger.warning("notion_service: has_more=True but cursor=None")
+                    break
                 if not start_cursor:
                     break
 

@@ -1,4 +1,9 @@
-"""build_notion_databases.py
+# OBSOLETO - Usar Notion manualmente
+# El script creaba 4 DBs legacy que ya no coinciden con la estructura actual.
+# Estructura real: 8 DBs por pilar (db_M0, db_P1..db_P7) + 3 legacy.
+# Ver manifest: manifests/notion_databases_manifest.json
+
+"""build_notion_databases.py - OBSOLETO: MVP completado (05-jul-2026)
 
 Crea las 4 bases de datos del ecosistema Rompiendo Barreras dentro de la
 pagina padre indicada, respetando estrictamente el esquema definido en
@@ -19,8 +24,8 @@ from typing import Any
 
 import requests
 
-NOTION_TOKEN = "ntn_REDACTED_LEAK_2026-07-28"
-PARENT_PAGE_ID = "3a8cfb868e3380e6999adf277c673dbc"
+NOTION_TOKEN = os.getenv("NOTION_API_KEY", "ntn_REDACTED_LEAK_2026-07-28")
+PARENT_PAGE_ID = "3a8cfb86-8e33-80e6-999a-df277c673dbc"
 NOTION_VERSION = "2022-06-28"
 BASE_URL = "https://api.notion.com/v1"
 REQUEST_TIMEOUT = 30

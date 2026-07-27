@@ -1,0 +1,32 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/gonzalojoel1_gmail_com/rompiendo-barreras
+            git pull origin main
+            docker build -t rb_vps_backend:latest . --no-cache
+            docker rm -f rb_vps_backend || true
+            docker run -d --name rb_vps_backend \
+              --env-file /home/gonzalojoel1_gmail_com/rompiendo-barreras/vps_backend/.env \
+              -p 8765:8765 \
+              -v "$(pwd)/context_vault:/app/context_vault:ro" \
+              -v "$(pwd)/logs:/app/logs" \
+              -v "$(pwd)/secrets:/app/secrets:ro" \
+              -v rb_vps_data:/app/data \
+              rb_vps_backend:latest
