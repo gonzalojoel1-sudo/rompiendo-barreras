@@ -61,9 +61,10 @@ EXPOSE 8765
 
 WORKDIR /app/vps_backend
 
-# Healthcheck nativo de Docker (sin dependencia de curl/wget en la imagen slim)
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request, json, sys; r = urllib.request.urlopen('http://127.0.0.1:8765/health', timeout=3); d = json.loads(r.read()); sys.exit(0 if d.get('status') == 'ok' else 1)"
+# Healthcheck nativo de Docker (sin dependencia de curl/wget en la imagen slim).
+# Timeout 30s: en e2-micro bajo carga (rebuild paralelo) curl puede tardar >5s.
+HEALTHCHECK --interval=30s --timeout=30s --start-period=15s --retries=3 \
+    CMD python -c "import urllib.request, json, sys; r = urllib.request.urlopen('http://127.0.0.1:8765/health', timeout=20); d = json.loads(r.read()); sys.exit(0 if d.get('status') == 'ok' else 1)"
 
 # Comando de arranque
 CMD ["uvicorn", "orca_memory_bridge:app", "--host", "0.0.0.0", "--port", "8765"]

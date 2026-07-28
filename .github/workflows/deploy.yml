@@ -70,6 +70,10 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # e2-micro (1 CPU) tarda 12-18 min en docker build --no-cache.
+          # Default SSH action timeout = 10min → falla con exit 124.
+          timeout: 30m
+          command_timeout: 30m
           script: |
             set -euo pipefail
             cd /home/gonzalojoel1_gmail_com/rompiendo-barreras
