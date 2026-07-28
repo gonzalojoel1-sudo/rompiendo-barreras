@@ -31,9 +31,13 @@ paths = [
   '''\.env\.sample$''',
   '''.env.test$''',
   '''tests?/.*''',
-  '''docs/onboarding_.*\.md$''',          # onboarding lesson drafts
+  '''docs/onboarding_.*\.md$''',            # onboarding lesson drafts
+  '''docs/storylines_onboarding\.md$''',    # storylines reference (no secrets)
   '''scripts/integration_test_e2e\.py$''', # uses placeholder token
   '''PROMPT_PLANTILLA_CLASES\.md$''',      # presentation template, no secrets
+  '''TASKS\.md$''',                        # docs reference Notion page UUIDs (infrastructure, not secrets)
+  '''fase[0-9]\.md$''',                    # docs reference webhook URLs (infrastructure, not secrets)
+  '''vps_backend/vps_backend_spec\.md$''', # spec doc references standard JWT header (public knowledge)
   '''\.gitleaks\.toml$''',
 ]
 

@@ -5,23 +5,42 @@ on:
     branches: [main]
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Run tests first — fail fast if any syntax/import check breaks.
+  # ---------------------------------------------------------------------------
+  test:
+    uses: ./.github/workflows/test.yml
+
+  # ---------------------------------------------------------------------------
+  # Deploy — only runs if `test` succeeds.
+  # ---------------------------------------------------------------------------
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.0.3
+        envs: GOOGLE_APPLICATION_CREDENTIALS,GOOGLE_CLOUD_REGION
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -euo pipefail
             cd /home/gonzalojoel1_gmail_com/rompiendo-barreras
+            echo "📥 Pulling latest from main…"
             git pull origin main
+
+            echo "🔨 Rebuilding Docker image (no cache)…"
             docker build -t rb_vps_backend:latest . --no-cache
+
+            echo "🛑 Stopping previous container…"
             docker rm -f rb_vps_backend || true
+
+            echo "🚀 Starting new container…"
             docker run -d --name rb_vps_backend \
               --env-file /home/gonzalojoel1_gmail_com/rompiendo-barreras/vps_backend/.env \
               -p 8765:8765 \
@@ -29,4 +48,20 @@ jobs:
               -v "$(pwd)/logs:/app/logs" \
               -v "$(pwd)/secrets:/app/secrets:ro" \
               -v rb_vps_data:/app/data \
+              -e GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/vertex.json \
+              -e GOOGLE_CLOUD_REGION=global \
               rb_vps_backend:latest
+
+            echo "⏳ Waiting for healthcheck (max 30s)…"
+            for i in {1..6}; do
+              sleep 5
+              if curl -fsS http://127.0.0.1:8765/health >/dev/null 2>&1; then
+                echo "✅ Backend healthy"
+                exit 0
+              fi
+              echo "  attempt $i/6 — retrying…"
+            done
+
+            echo "❌ Backend failed healthcheck after 30s"
+            docker logs --tail 50 rb_vps_backend
+            exit 1
