@@ -80,8 +80,8 @@ jobs:
             echo "📥 Pulling latest from main…"
             git pull origin main
 
-            echo "🔨 Rebuilding Docker image (no cache)…"
-            docker build -t rb_vps_backend:latest . --no-cache
+            echo "🔨 Rebuilding Docker image (incremental — solo rehace layers con código nuevo)…"
+            docker build -t rb_vps_backend:latest .
 
             echo "🛑 Stopping previous container…"
             docker rm -f rb_vps_backend || true
