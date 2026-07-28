@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# =============================================================================
+# .githooks/pre-commit — gitleaks blocker
+# =============================================================================
+# Scans staged changes for secrets. Blocks the commit if any leak is found.
+# Configured by .gitleaks.toml at the repo root.
+#
+# Installed into .git/hooks/pre-commit by:
+#   make install-hooks   OR
+#   ln -sf ../../.githooks/pre-commit .git/hooks/pre-commit
+#
+# Skip in emergencies with:  git commit --no-verify
+# =============================================================================
+
+set -euo pipefail
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "❌ gitleaks not installed. Install with: brew install gitleaks"
+  echo "   Or bypass this hook for an emergency commit: git commit --no-verify"
+  exit 1
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+CONFIG="${REPO_ROOT}/.gitleaks.toml"
+
+if [[ ! -f "${CONFIG}" ]]; then
+  echo "❌ .gitleaks.toml not found at ${CONFIG}"
+  exit 1
+fi
+
+echo "🔒 gitleaks: scanning staged changes…"
+
+# `protect` exits 1 on findings, 0 on clean. --redact prints the leaked secret
+# redacted; --no-banner keeps the output focused.
+if ! gitleaks protect \
+    --staged \
+    --redact \
+    --no-banner \
+    --config "${CONFIG}" \
+    --source "${REPO_ROOT}"; then
+  cat <<'EOF'
+
+❌ COMMIT BLOCKED — secrets detected in staged changes.
+
+   1. Review the gitleaks report above
+   2. Move secrets to secrets/SECRETS.md (gitignored) or env vars
+   3. Re-stage and retry the commit
+
+   To override in a true emergency: git commit --no-verify
+EOF
+  exit 1
+fi
+
+echo "✅ gitleaks: clean."

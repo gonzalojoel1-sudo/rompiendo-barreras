@@ -1,0 +1,82 @@
+# =============================================================================
+# .gitleaks.toml — Custom rules layered on top of the default gitleaks ruleset
+# =============================================================================
+# Triggered by the pre-commit hook installed at .git/hooks/pre-commit.
+#
+# On 2026-07-28 a Notion token + 3 other secrets leaked when the repo was
+# briefly made public. These rules are tuned to catch the same class of leak
+# (Notion API tokens, MiniMax-style sk-cp keys, Telegram bot tokens, GCP
+# project IDs) before they reach the remote.
+#
+# Run manually:
+#   gitleaks detect --source . --verbose
+#
+# Run on staged changes only:
+#   gitleaks protect --staged --verbose
+# =============================================================================
+
+title = "Rompiendo Barreras secret scanner"
+
+# Use the built-in ruleset (covers AWS, GitHub, Slack, Stripe, OpenAI, etc.)
+# and add project-specific rules below.
+[extend]
+useDefault = true
+
+# ---------------------------------------------------------------------------
+# Allow-list — files that may legitimately contain placeholder secrets.
+# ---------------------------------------------------------------------------
+[allowlist]
+paths = [
+  '''\.env\.example$''',
+  '''\.env\.sample$''',
+  '''.env.test$''',
+  '''tests?/.*''',
+  '''docs/onboarding_.*\.md$''',          # onboarding lesson drafts
+  '''scripts/integration_test_e2e\.py$''', # uses placeholder token
+  '''PROMPT_PLANTILLA_CLASES\.md$''',      # presentation template, no secrets
+  '''\.gitleaks\.toml$''',
+]
+
+# Stop on first finding (more aggressive than the default aggregate report)
+[detect]
+entropy = 3.5
+
+# ---------------------------------------------------------------------------
+# Custom rules — secrets we know exist in this project.
+# ---------------------------------------------------------------------------
+
+# 1. Notion integration tokens (ntn_… and secret_…)
+#    No keywords — catch any token even without contextual variable name.
+[[rules]]
+id = "notion-api-token"
+description = "Notion API integration token"
+regex = '''(?i)(ntn|secret)_[A-Za-z0-9]{20,}'''
+tags = ["secret", "notion"]
+
+# 2. MiniMax / MiniMax-style API keys (sk-cp-…)
+[[rules]]
+id = "minimax-style-api-key"
+description = "MiniMax-style API key"
+regex = '''sk-cp-[A-Za-z0-9_-]{20,}'''
+tags = ["secret", "minimax"]
+
+# 3. Telegram bot tokens (numeric:alphanumeric base64)
+[[rules]]
+id = "telegram-bot-token"
+description = "Telegram bot token"
+regex = '''[0-9]{8,10}:AA[A-Za-z0-9_-]{30,}'''
+tags = ["secret", "telegram"]
+
+# 4. GCP / Vertex project IDs in the form cs-project-XXXX
+[[rules]]
+id = "vertex-project-id"
+description = "Vertex / GCP project identifier"
+regex = '''cs-project-[a-z0-9]{6,}'''
+tags = ["secret", "gcp", "vertex"]
+
+# 5. Generic high-entropy password / key assignments (catch-all)
+[[rules]]
+id = "generic-env-assignment"
+description = "Hardcoded credential in env-style assignment"
+regex = '''(?i)(password|secret|api[_-]?key|access[_-]?token|auth[_-]?token|bearer)\s*=\s*['"][^'"]{12,}['"]'''
+tags = ["secret", "generic"]
