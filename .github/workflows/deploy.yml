@@ -83,24 +83,12 @@ jobs:
             echo "🔨 Rebuilding Docker image (incremental — solo rehace layers con código nuevo)…"
             docker build -t rb_vps_backend:latest .
 
-            echo "🛑 Stopping previous container…"
-            docker stop rb_vps_backend 2>/dev/null || true
-            # Sleep para evitar race condition: rm puede tardar en liberar el nombre.
-            sleep 3
-            docker rm -f rb_vps_backend 2>/dev/null || true
-            sleep 2
-
-            echo "🚀 Starting new container…"
-            docker run -d --name rb_vps_backend \
-              --env-file /home/gonzalojoel1_gmail_com/rompiendo-barreras/vps_backend/.env \
-              -p 8765:8765 \
-              -v "$(pwd)/context_vault:/app/context_vault:ro" \
-              -v "$(pwd)/logs:/app/logs" \
-              -v "$(pwd)/secrets:/app/secrets:ro" \
-              -v rb_vps_data:/app/data \
-              -e GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/vertex.json \
-              -e GOOGLE_CLOUD_REGION=global \
-              rb_vps_backend:latest
+            # docker compose maneja stop + rm + run con sincronización correcta
+            # (sin race condition de "container name already in use").
+            # Solo recrea orca_backend; telegram_bot está en profile ["bot"]
+            # y NO se toca (la imagen la reusa).
+            echo "🚀 Recreating services via docker compose…"
+            docker compose up -d --force-recreate orca_backend
 
             echo "⏳ Waiting for healthcheck (max 120s — uvicorn tarda en importar todos los módulos en e2-micro)…"
             for i in {1..24}; do
@@ -113,5 +101,5 @@ jobs:
             done
 
             echo "❌ Backend failed healthcheck after 120s"
-            docker logs --tail 50 rb_vps_backend
+            docker compose logs --tail 50 orca_backend
             exit 1
