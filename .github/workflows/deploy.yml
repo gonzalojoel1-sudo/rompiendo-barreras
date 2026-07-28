@@ -84,7 +84,11 @@ jobs:
             docker build -t rb_vps_backend:latest .
 
             echo "🛑 Stopping previous container…"
-            docker rm -f rb_vps_backend || true
+            docker stop rb_vps_backend 2>/dev/null || true
+            # Sleep para evitar race condition: rm puede tardar en liberar el nombre.
+            sleep 3
+            docker rm -f rb_vps_backend 2>/dev/null || true
+            sleep 2
 
             echo "🚀 Starting new container…"
             docker run -d --name rb_vps_backend \
