@@ -23,7 +23,6 @@ jobs:
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
-        envs: GOOGLE_APPLICATION_CREDENTIALS,GOOGLE_CLOUD_REGION
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
