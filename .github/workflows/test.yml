@@ -1,6 +1,9 @@
 name: Test
 
 on:
+  # Reusable workflow — called from .github/workflows/deploy.yml
+  workflow_call:
+  # Standalone triggers — runs on every push/PR to main
   push:
     branches: [main]
   pull_request:
