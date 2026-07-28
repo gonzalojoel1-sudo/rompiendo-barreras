@@ -83,12 +83,16 @@ jobs:
             echo "🔨 Rebuilding Docker image (incremental — solo rehace layers con código nuevo)…"
             docker build -t rb_vps_backend:latest .
 
-            # docker compose maneja stop + rm + run con sincronización correcta
-            # (sin race condition de "container name already in use").
-            # Solo recrea orca_backend; telegram_bot está en profile ["bot"]
-            # y NO se toca (la imagen la reusa).
+            # Antes de invocar compose: limpiar containers creados por `docker run`
+            # anteriores (compose no los considera "suyos" y no puede recrearlos).
+            # --remove-orphans limpia containers que ya no están en compose.yml.
+            echo "🧹 Limpiando containers huérfanos…"
+            docker rm -f rb_vps_backend 2>/dev/null || true
+            docker rm -f rb_telegram_bot 2>/dev/null || true
+            sleep 3
+
             echo "🚀 Recreating services via docker compose…"
-            docker compose up -d --force-recreate orca_backend
+            docker compose up -d --remove-orphans
 
             echo "⏳ Waiting for healthcheck (max 120s — uvicorn tarda en importar todos los módulos en e2-micro)…"
             for i in {1..24}; do
