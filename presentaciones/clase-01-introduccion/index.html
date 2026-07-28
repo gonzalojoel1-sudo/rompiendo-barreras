@@ -1,0 +1,2161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rompiendo Barreras — Mentalidad del Éxito · Clase 01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Open+Sans:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================
+     RESET + BASE
+     ========================================================= */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    min-width: 100vw;
+    background: #000000;
+    overflow: hidden;
+    font-family: 'Open Sans', sans-serif;
+    color: #ffffff;
+  }
+
+  /* Ambient glow atmosphere */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 8% 12%,  rgba(254, 65, 0, 0.12) 0%, transparent 38%),
+      radial-gradient(circle at 92% 88%, rgba(254, 65, 0, 0.10) 0%, transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(254, 65, 0, 0.06) 0%, transparent 30%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  /* Subtle vignette */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* =========================================================
+     CANVAS 1920x1080 — escalado por JS (vía variable CSS)
+     ========================================================= */
+  .stage {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    flex-shrink: 0;
+    transform-origin: 50% 50%;
+    transform: scale(var(--canvas-scale, 1));
+    z-index: 5;
+    overflow: hidden;
+    contain: layout paint size;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    image-rendering: optimizeQuality;
+  }
+
+  /* El viewport llena la pantalla y centra el lienzo */
+  .viewport {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #000000;
+  }
+
+  /* =========================================================
+     SLIDE SYSTEM
+     ========================================================= */
+  .slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 70px 110px;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .slide.active {
+    display: flex;
+    animation: slideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Slide decorations — corner brackets */
+  .slide::before, .slide::after {
+    content: "";
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border: 2px solid rgba(254, 65, 0, 0.55);
+  }
+  .slide::before {
+    top: 40px; left: 60px;
+    border-right: none; border-bottom: none;
+  }
+  .slide::after {
+    bottom: 40px; right: 60px;
+    border-left: none; border-top: none;
+  }
+
+  /* =========================================================
+     TYPOGRAPHY UTILITIES
+     ========================================================= */
+  .accent   { color: #FE4100; }
+  .gray     { color: #aaaaaa; }
+  .bold     { font-weight: 700; }
+
+  .eyebrow {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: #FE4100;
+    margin-bottom: 36px;
+  }
+
+  .title-xl {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 130px;
+    line-height: 0.95;
+    text-transform: uppercase;
+    letter-spacing: -3px;
+  }
+  .title-lg {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 90px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+  }
+  .title-md {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+  .body-lg  { font-size: 30px; line-height: 1.45; }
+  .body-md  { font-size: 22px; line-height: 1.5; }
+  .body-sm  { font-size: 18px; line-height: 1.5; }
+
+  /* =========================================================
+     COMPONENT: CARD
+     ========================================================= */
+  .card {
+    background: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 6px;
+    box-shadow:
+      0 30px 60px -20px rgba(0, 0, 0, 0.85),
+      0 10px 30px -15px rgba(254, 65, 0, 0.15);
+    padding: 36px 40px;
+  }
+  .card-accent-top {
+    position: relative;
+  }
+  .card-accent-top::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #FE4100, transparent);
+  }
+
+  /* =========================================================
+     COMPONENT: ICON BULLETS
+     ========================================================= */
+  .icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  .icon-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .icon-circle svg {
+    width: 28px;
+    height: 28px;
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .icon-circle.bad  { background: rgba(170, 170, 170, 0.08); border: 1px solid rgba(170,170,170,0.25); }
+  .icon-circle.bad  svg { stroke: #888888; }
+  .icon-circle.good { background: rgba(254, 65, 0, 0.12); border: 1px solid rgba(254, 65, 0, 0.45); }
+  .icon-circle.good svg { stroke: #FE4100; }
+
+  /* =========================================================
+     COMPONENT: NUMBERED PILL
+     ========================================================= */
+  .num-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 18px;
+    color: #FE4100;
+    letter-spacing: 2px;
+  }
+  .num-pill::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background: #FE4100;
+    transform: rotate(45deg);
+  }
+
+  /* =========================================================
+     SLIDE: HERO / COVER
+     ========================================================= */
+  .hero {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0;
+  }
+  .hero .hero-label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: 12px;
+    color: #FE4100;
+    margin-bottom: 70px;
+  }
+  .hero h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 230px;
+    line-height: 0.92;
+    text-transform: uppercase;
+    letter-spacing: -6px;
+  }
+  .hero h1 .break {
+    display: block;
+    color: #FE4100;
+    text-shadow: 0 0 60px rgba(254, 65, 0, 0.35);
+  }
+  .hero .accent-bar {
+    width: 240px;
+    height: 6px;
+    background: linear-gradient(90deg, transparent, #FE4100, transparent);
+    margin: 60px auto;
+  }
+  .hero .subtitle {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 46px;
+    letter-spacing: 14px;
+    color: #ffffff;
+  }
+  .hero .author-line {
+    margin-top: 70px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 20px;
+    color: #aaaaaa;
+    letter-spacing: 4px;
+  }
+  .hero .author-line .dot {
+    color: #FE4100;
+    margin: 0 12px;
+  }
+
+  /* Big decorative number on cover */
+  .hero-mark {
+    position: absolute;
+    top: 70px;
+    right: 110px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 22px;
+    color: rgba(254, 65, 0, 0.8);
+    letter-spacing: 3px;
+  }
+
+  /* =========================================================
+     SLIDE: STATEMENT (big centered text)
+     ========================================================= */
+  .statement {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .statement-text {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 120px;
+    line-height: 1.02;
+    text-transform: uppercase;
+    max-width: 1500px;
+  }
+  .statement-sub {
+    margin-top: 60px;
+    font-size: 30px;
+    color: #aaaaaa;
+    max-width: 1300px;
+  }
+
+  /* =========================================================
+     SLIDE: SECTION BREAK
+     ========================================================= */
+  .section-break {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background:
+      radial-gradient(ellipse at center, rgba(254, 65, 0, 0.12) 0%, transparent 50%),
+      #000000;
+  }
+  .section-break .sb-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 22px;
+    color: #FE4100;
+    letter-spacing: 8px;
+    margin-bottom: 50px;
+  }
+  .section-break .sb-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 140px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -3px;
+    max-width: 1500px;
+  }
+  .section-break .sb-sub {
+    margin-top: 50px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 42px;
+    letter-spacing: 6px;
+    color: #FE4100;
+    text-transform: uppercase;
+  }
+  .section-break .accent-line-thin {
+    width: 200px;
+    height: 2px;
+    background: #FE4100;
+    margin: 50px auto 0;
+  }
+
+  /* =========================================================
+     SLIDE: TWO COLUMNS — INTRO/WELCOME
+     ========================================================= */
+  .intro-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 80px;
+    flex: 1;
+    align-items: center;
+  }
+  .intro-left .name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 110px;
+    line-height: 0.95;
+    text-transform: uppercase;
+    letter-spacing: -3px;
+    margin: 30px 0 50px;
+  }
+  .intro-left .intro-msg {
+    font-size: 28px;
+    line-height: 1.5;
+    color: #cccccc;
+  }
+  .credentials {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .credential {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 22px 28px;
+    background: #0a0a0a;
+    border-left: 3px solid #FE4100;
+    border-radius: 0 4px 4px 0;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .credential .num {
+    font-family: 'JetBrains Mono', monospace;
+    color: #FE4100;
+    font-size: 18px;
+    min-width: 38px;
+  }
+
+  /* =========================================================
+     SLIDE: QUOTE
+     ========================================================= */
+  .quote-slide {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .quote-mark {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 140px;
+    line-height: 0.4;
+    color: #FE4100;
+    margin-bottom: 28px;
+    text-shadow: 0 0 60px rgba(254, 65, 0, 0.35);
+  }
+  .quote-text {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 92px;
+    line-height: 1.05;
+    max-width: 1500px;
+    text-transform: none;
+  }
+  .quote-text em {
+    font-style: normal;
+    color: #FE4100;
+  }
+  .quote-sub {
+    margin-top: 50px;
+    font-size: 28px;
+    color: #aaaaaa;
+    max-width: 1300px;
+  }
+
+  /* =========================================================
+     SLIDE: 4-CARD GRID (Para los que...)
+     ========================================================= */
+  .audience-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin-top: 50px;
+    flex: 1;
+  }
+  .audience-card {
+    background: #0a0a0a;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-top: 3px solid #FE4100;
+    padding: 36px 40px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 20px 50px -25px rgba(254, 65, 0, 0.25);
+  }
+  .audience-card .ord {
+    font-family: 'JetBrains Mono', monospace;
+    color: #FE4100;
+    font-size: 16px;
+    letter-spacing: 3px;
+    margin-bottom: 18px;
+  }
+  .audience-card p {
+    font-size: 26px;
+    line-height: 1.35;
+    font-weight: 600;
+  }
+
+  /* =========================================================
+     SLIDE: THREE PILLARS
+     ========================================================= */
+  .pillars-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 36px;
+    margin-top: 70px;
+    flex: 1;
+  }
+  .pillar-card {
+    background: #0a0a0a;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 50px 40px;
+    text-align: center;
+    box-shadow:
+      0 30px 70px -25px rgba(0,0,0,0.9),
+      0 0 0 1px rgba(254, 65, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pillar-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #FE4100, transparent);
+  }
+  .pillar-card .num-large {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 22px;
+    color: #FE4100;
+    letter-spacing: 4px;
+  }
+  .pillar-card .word {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 64px;
+    text-transform: uppercase;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .pillar-card .desc {
+    font-size: 20px;
+    color: #aaaaaa;
+    line-height: 1.4;
+  }
+
+  /* =========================================================
+     SLIDE: COMPARISON (Hell vs Heaven)
+     ========================================================= */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+    flex: 1;
+    margin-top: 40px;
+  }
+  .compare-col {
+    background: #0a0a0a;
+    border-radius: 6px;
+    padding: 40px 44px;
+    display: flex;
+    flex-direction: column;
+    border-top: 4px solid;
+    box-shadow: 0 30px 70px -25px rgba(0,0,0,0.9);
+  }
+  .compare-col.hell {
+    border-top-color: #555555;
+    box-shadow: 0 30px 70px -25px rgba(0,0,0,0.9), inset 0 0 80px rgba(80,80,80,0.06);
+  }
+  .compare-col.heaven {
+    border-top-color: #FE4100;
+    box-shadow: 0 30px 70px -25px rgba(0,0,0,0.9), inset 0 0 60px rgba(254, 65, 0, 0.05);
+  }
+  .compare-col .col-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 30px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .compare-col .col-sub {
+    font-size: 16px;
+    color: #aaaaaa;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .compare-col ul { list-style: none; flex: 1; }
+  .compare-col li {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+    font-size: 19px;
+    line-height: 1.4;
+  }
+  .compare-col li:last-child { margin-bottom: 0; }
+  .compare-col.hell li { color: #888888; }
+  .compare-col.heaven li { color: #ffffff; }
+  .compare-col.hell .marker {
+    color: #555555;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .compare-col.heaven .marker {
+    color: #FE4100;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* =========================================================
+     SLIDE: 7-PILLARS VISUAL
+     ========================================================= */
+  .pillars-7 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    margin-top: 50px;
+    flex: 1;
+  }
+  .p7 {
+    background: #0a0a0a;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 28px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .p7::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(254, 65, 0, 0.08), transparent 60%);
+    pointer-events: none;
+  }
+  .p7 .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 18px;
+    color: #FE4100;
+    letter-spacing: 2px;
+  }
+  .p7 .name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    text-transform: uppercase;
+    line-height: 1.1;
+    letter-spacing: 0.5px;
+  }
+  .p7 .desc {
+    font-size: 15px;
+    color: #aaaaaa;
+    line-height: 1.4;
+  }
+  .p7.wide { grid-column: span 2; }
+  .p7.tall { grid-row: span 2; }
+
+  /* =========================================================
+     SLIDE: PILLARS TACTICAL (24 semanas)
+     ========================================================= */
+  .tactical-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 60px;
+    flex: 1;
+  }
+  .tg {
+    background: #0a0a0a;
+    border: 1px solid rgba(255,255,255,0.05);
+    padding: 40px 36px;
+    border-radius: 6px;
+    text-align: center;
+  }
+  .tg .big {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 64px;
+    color: #FE4100;
+    line-height: 1;
+    margin-bottom: 14px;
+    letter-spacing: -2px;
+  }
+  .tg .lbl {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .tg .sub {
+    font-size: 16px;
+    color: #aaaaaa;
+    margin-top: 10px;
+    line-height: 1.4;
+  }
+
+  /* =========================================================
+     SLIDE: CONTRAST 3 ROWS
+     ========================================================= */
+  .contrast-rows {
+    margin-top: 70px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  .crow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 40px;
+    padding: 36px 50px;
+    background: #0a0a0a;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .crow .vs {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 36px;
+    color: #FE4100;
+    letter-spacing: 4px;
+  }
+  .crow .old, .crow .new {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 50px;
+    text-transform: uppercase;
+    letter-spacing: 0px;
+  }
+  .crow .old { color: #555555; text-align: right; text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.2); }
+  .crow .new { color: #ffffff; }
+
+  /* =========================================================
+     SLIDE: PROFILE / CRED CARD (José)
+     ========================================================= */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1.4fr;
+    gap: 50px;
+    flex: 1;
+    align-items: center;
+    margin-top: 30px;
+  }
+  .profile-card {
+    background: #0a0a0a;
+    border-radius: 6px;
+    padding: 50px 44px;
+    border-left: 4px solid #FE4100;
+    box-shadow: 0 30px 80px -25px rgba(254, 65, 0, 0.3);
+  }
+  .profile-card .role {
+    font-family: 'JetBrains Mono', monospace;
+    color: #FE4100;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+  }
+  .profile-card .name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 60px;
+    text-transform: uppercase;
+    line-height: 0.95;
+    letter-spacing: -1px;
+    margin-bottom: 28px;
+  }
+  .profile-card .name em {
+    font-style: normal;
+    color: #FE4100;
+  }
+  .profile-card .ref {
+    font-size: 18px;
+    color: #aaaaaa;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 20px;
+    line-height: 1.5;
+  }
+  .profile-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .pfact {
+    background: #0a0a0a;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 26px 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 26px;
+  }
+  .pfact .icn {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: rgba(254, 65, 0, 0.12);
+    border: 1px solid rgba(254, 65, 0, 0.4);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .pfact .icn svg {
+    width: 24px; height: 24px;
+    stroke: #FE4100;
+    stroke-width: 2.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .pfact .txt {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .pfact .txt small {
+    display: block;
+    color: #aaaaaa;
+    font-size: 15px;
+    font-weight: 400;
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* =========================================================
+     SLIDE: MOMENT (José defining moment)
+     ========================================================= */
+  .moment-flow {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    margin-top: 50px;
+    flex: 1;
+  }
+  .mstep {
+    background: #0a0a0a;
+    border-radius: 6px;
+    padding: 36px 30px;
+    border: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+  }
+  .mstep .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    color: #FE4100;
+    font-size: 14px;
+    letter-spacing: 3px;
+  }
+  .mstep .step-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 30px;
+    text-transform: uppercase;
+    line-height: 1.05;
+  }
+  .mstep .step-text {
+    font-size: 19px;
+    line-height: 1.45;
+    color: #cccccc;
+  }
+  .mstep .step-text em { color: #FE4100; font-style: normal; font-weight: 700; }
+
+  /* =========================================================
+     SLIDE: ARCHETYPE / IDENTITY
+     ========================================================= */
+  .archetype {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .arc-eyebrow {
+    font-size: 22px;
+    color: #aaaaaa;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  .arc-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 110px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    margin-bottom: 50px;
+  }
+  .arc-title em { font-style: normal; color: #FE4100; }
+  .arc-tags {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    max-width: 1400px;
+  }
+  .arc-tag {
+    padding: 18px 36px;
+    background: rgba(254, 65, 0, 0.08);
+    border: 1px solid rgba(254, 65, 0, 0.35);
+    border-radius: 999px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* =========================================================
+     SLIDE: 3 LINES (Púlpito)
+     ========================================================= */
+  .pulpit-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    margin-top: 60px;
+    flex: 1;
+    justify-content: center;
+  }
+  .pline {
+    background: #0a0a0a;
+    border-radius: 6px;
+    padding: 38px 50px;
+    border-left: 5px solid #FE4100;
+    box-shadow: 0 20px 50px -25px rgba(254, 65, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
+  .pline .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 26px;
+    color: #FE4100;
+    min-width: 60px;
+  }
+  .pline .txt {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 38px;
+    text-transform: uppercase;
+    line-height: 1.05;
+    letter-spacing: -0.5px;
+  }
+
+  /* =========================================================
+     SLIDE: 5 ITEMS (Leave behind / We provide)
+     ========================================================= */
+  .list-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    margin-top: 50px;
+    flex: 1;
+  }
+  .list-card {
+    background: #0a0a0a;
+    border-radius: 6px;
+    padding: 30px 36px;
+    border: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+  .list-card .icn {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .list-card .icn.bad {
+    background: rgba(170, 60, 60, 0.10);
+    border: 1px solid rgba(170, 60, 60, 0.3);
+  }
+  .list-card .icn.bad svg {
+    width: 24px; height: 24px;
+    stroke: #d44; stroke-width: 3; fill: none;
+    stroke-linecap: round;
+  }
+  .list-card .icn.good {
+    background: rgba(254, 65, 0, 0.12);
+    border: 1px solid rgba(254, 65, 0, 0.4);
+  }
+  .list-card .icn.good svg {
+    width: 24px; height: 24px;
+    stroke: #FE4100; stroke-width: 3; fill: none;
+    stroke-linecap: round;
+  }
+  .list-card .text {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .list-card .text small {
+    display: block;
+    color: #aaaaaa;
+    font-weight: 400;
+    font-size: 16px;
+    margin-top: 4px;
+  }
+  .list-grid.full { grid-template-columns: 1fr; max-width: 1500px; }
+
+  /* =========================================================
+     SLIDE: TACTICAL 3 (Sigilo, Velocidad, Violencia)
+     ========================================================= */
+  .tactic-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 60px;
+    flex: 1;
+  }
+  .tactic {
+    background: linear-gradient(180deg, rgba(254,65,0,0.10), rgba(254,65,0,0.02));
+    border: 1px solid rgba(254, 65, 0, 0.3);
+    border-radius: 6px;
+    padding: 50px 40px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    box-shadow: 0 25px 60px -20px rgba(254, 65, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .tactic::before {
+    content: "";
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at center, rgba(254,65,0,0.18), transparent 50%);
+    animation: pulse 3.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50%      { opacity: 1; transform: scale(1.05); }
+  }
+  .tactic .word {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 64px;
+    text-transform: uppercase;
+    line-height: 1;
+    letter-spacing: -1px;
+    z-index: 1;
+  }
+  .tactic .desc {
+    font-size: 19px;
+    color: #cccccc;
+    line-height: 1.4;
+    z-index: 1;
+  }
+  .tactic .ord {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    color: #FE4100;
+    letter-spacing: 4px;
+    z-index: 1;
+  }
+
+  /* =========================================================
+     SLIDE: NEXT CLASSES
+     ========================================================= */
+  .next-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
+    margin-top: 60px;
+    flex: 1;
+  }
+  .nxt {
+    background: #0a0a0a;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 36px 28px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .nxt::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0; right: 0; height: 3px;
+    background: #FE4100;
+  }
+  .nxt .n {
+    font-family: 'JetBrains Mono', monospace;
+    color: #FE4100;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 2px;
+  }
+  .nxt .ttl {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .nxt .sub {
+    font-size: 14px;
+    color: #aaaaaa;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* =========================================================
+     SLIDE: DECISION
+     ========================================================= */
+  .decision-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 60px;
+    flex: 1;
+  }
+  .d-col {
+    background: #0a0a0a;
+    border-radius: 6px;
+    padding: 50px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 18px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .d-col.yes {
+    border: 2px solid #FE4100;
+    background: linear-gradient(180deg, rgba(254,65,0,0.18), rgba(254,65,0,0.04));
+    box-shadow: 0 30px 80px -20px rgba(254, 65, 0, 0.4), inset 0 0 60px rgba(254,65,0,0.08);
+  }
+  .d-col.no {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+    opacity: 0.55;
+  }
+  .d-col .q {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    text-transform: uppercase;
+    color: #aaaaaa;
+    letter-spacing: 2px;
+  }
+  .d-col .a {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 84px;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .d-col.yes .a { color: #FE4100; text-shadow: 0 0 40px rgba(254,65,0,0.4); }
+  .d-col.no .a { color: #555555; }
+
+  .commitments {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 50px;
+  }
+  .commit {
+    background: #0a0a0a;
+    border-top: 3px solid #FE4100;
+    padding: 30px 34px;
+    border-radius: 4px;
+  }
+  .commit .who {
+    font-family: 'JetBrains Mono', monospace;
+    color: #FE4100;
+    font-size: 14px;
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+  }
+  .commit .msg {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  /* =========================================================
+     SLIDE: FINAL DECLARATION (CTA)
+     ========================================================= */
+  .declaration {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background:
+      radial-gradient(ellipse at center, rgba(254, 65, 0, 0.16) 0%, transparent 55%),
+      #000000;
+  }
+  .decl-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    color: #FE4100;
+    font-size: 22px;
+    letter-spacing: 8px;
+    margin-bottom: 50px;
+  }
+  .decl-text {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 86px;
+    line-height: 1.08;
+    text-transform: uppercase;
+    max-width: 1600px;
+    letter-spacing: -2px;
+  }
+  .decl-text em {
+    font-style: normal;
+    color: #FE4100;
+    text-shadow: 0 0 50px rgba(254, 65, 0, 0.4);
+  }
+  .decl-text .breaker {
+    display: block;
+    height: 14px;
+  }
+  .decl-divider {
+    width: 240px;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #FE4100, transparent);
+    margin: 60px auto;
+  }
+  .decl-final {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 36px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: #ffffff;
+  }
+
+  /* =========================================================
+     HEADER BAR (eyebrow + counter)
+     ========================================================= */
+  .slide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .slide-header .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(254, 65, 0, 0.1);
+    border: 1px solid rgba(254, 65, 0, 0.4);
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 14px;
+    color: #FE4100;
+    letter-spacing: 3px;
+  }
+  .slide-header .chip .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #FE4100;
+    box-shadow: 0 0 12px #FE4100;
+  }
+  .slide-header .section-label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: #aaaaaa;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  /* =========================================================
+     CONTROLS OVERLAY
+     ========================================================= */
+  .controls {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    z-index: 50;
+    background: rgba(10, 10, 10, 0.7);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    padding: 8px 14px;
+    border-radius: 999px;
+  }
+  .controls button {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(254, 65, 0, 0.5);
+    background: rgba(254, 65, 0, 0.1);
+    color: #FE4100;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .controls button:hover {
+    background: #FE4100;
+    color: #000;
+  }
+  .controls .counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: #FE4100;
+    font-size: 13px;
+    min-width: 80px;
+    text-align: center;
+    letter-spacing: 2px;
+  }
+
+  /* Initial hint */
+  .hint {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 3px;
+    z-index: 49;
+    animation: fadeOut 6s ease-in 3s forwards;
+    pointer-events: none;
+  }
+  @keyframes fadeOut {
+    to { opacity: 0; }
+  }
+
+  /* =========================================================
+     PRINT CSS — para exportar a PDF con calidad perfecta
+     Al imprimir: 1 slide por página, sin controles, sin
+     animaciones, con colores de fondo preservados.
+     ========================================================= */
+  @media print {
+    @page {
+      size: 1920px 1080px;
+      margin: 0;
+    }
+
+    /* Forzar que html y body permitan todo el lienzo */
+    html, body {
+      width: 1920px !important;
+      height: 1080px !important;
+      min-height: 0 !important;
+      min-width: 0 !important;
+      overflow: visible !important;
+      background: #000000 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* El viewport deja de aplicar escala */
+    .viewport {
+      position: static !important;
+      display: block !important;
+      width: 1920px !important;
+      height: 1080px !important;
+      overflow: visible !important;
+      background: #000 !important;
+    }
+
+    /* El lienzo se imprime sin transform */
+    .stage {
+      position: relative !important;
+      width: 1920px !important;
+      height: 1080px !important;
+      transform: none !important;
+      overflow: hidden !important;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    /* Cada slide ocupa una página completa */
+    .slide {
+      display: flex !important;
+      position: relative !important;
+      inset: auto !important;
+      width: 1920px !important;
+      height: 1080px !important;
+      padding: 70px 110px !important;
+      page-break-after: always;
+      break-after: page;
+      animation: none !important;
+      opacity: 1 !important;
+    }
+
+    /* Solo mostrar el slide activo en cada página
+       usando nth-of-type y un truco: todas las slides se
+       renderizan, pero el navegador las apila en páginas
+       separadas automáticamente. Para que solo se vea una
+       por página, usamos position absolute dentro de .stage
+       y dejamos el flujo natural. */
+    .slide { position: relative !important; inset: auto !important; }
+
+    /* Eliminar decoraciones y controles en el modo print */
+    .slide::before, .slide::after { display: none !important; }
+    .controls, .hint { display: none !important; }
+    body::before, body::after { display: none !important; }
+
+    /* Animaciones off */
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="viewport">
+<div class="stage" id="stage">
+
+  <!-- ==================== SLIDE 01 · COVER ==================== -->
+  <section class="slide hero active" data-section="INTRODUCCIÓN">
+    <div class="hero-mark">// CLASE_01 / INTRODUCCIÓN</div>
+    <div class="hero-label">CURSO DE FORMACIÓN Y TRANSFORMACIÓN</div>
+    <h1>ROMPIENDO<span class="break">BARRERAS</span></h1>
+    <div class="accent-bar"></div>
+    <div class="subtitle">MENTALIDAD DEL ÉXITO</div>
+    <div class="author-line">POR MARCOS BARBOSA<span class="dot">●</span>CEO &amp; FUNDADOR</div>
+  </section>
+
+  <!-- ==================== SLIDE 02 · BIENVENIDA ==================== -->
+  <section class="slide" data-section="BIENVENIDA">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> CLASE 01</div>
+      <div class="section-label">// BIENVENIDA OFICIAL</div>
+    </div>
+    <div class="intro-grid">
+      <div class="intro-left">
+        <div class="eyebrow">HOLA, MI NOMBRE ES</div>
+        <div class="name accent">MARCOS<br>BARBOSA</div>
+        <p class="intro-msg">
+          Y quiero decirte algo con <span class="accent bold">total claridad</span> desde el primer segundo:
+          no estás aquí por casualidad, ni compraste un simple curso grabado más de internet.
+        </p>
+      </div>
+      <div class="credentials">
+        <div class="credential"><span class="num">01</span> Hijo de Dios</div>
+        <div class="credential"><span class="num">02</span> Padre</div>
+        <div class="credential"><span class="num">03</span> Pastor</div>
+        <div class="credential"><span class="num">04</span> Ex integrante de fuerzas especiales</div>
+        <div class="credential"><span class="num">05</span> Empresario consultor</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 03 · MISIÓN ==================== -->
+  <section class="slide statement" data-section="MISIÓN">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> DECLARACIÓN</div>
+      <div class="section-label">// LA MISIÓN</div>
+    </div>
+    <div class="statement-text">Ingresaste a<br><span class="accent">UNA MISIÓN</span></div>
+    <p class="statement-sub">
+      A un movimiento global de líderes y empresarios cristianos que han decidido dejar de operar en <span class="gray">escasez</span> y comenzar a construir desde la <span class="accent bold">abundancia del Reino</span>.
+    </p>
+  </section>
+
+  <!-- ==================== SLIDE 04 · SEMILLA ==================== -->
+  <section class="slide quote-slide" data-section="PROPÓSITO">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> PROFECÍA PERSONAL</div>
+      <div class="section-label">// LA SEMILLA</div>
+    </div>
+    <div class="quote-mark">&ldquo;</div>
+    <div class="quote-text">
+      Si estás viendo esto, es porque Dios ya puso en tu corazón la <em>semilla de transformación</em>.
+    </div>
+    <p class="quote-sub">La cual vamos a regar y cuidar juntos hasta que dé los frutos que transformen esta tierra.</p>
+  </section>
+
+  <!-- ==================== SLIDE 05 · NO ES PARA TODOS ==================== -->
+  <section class="slide" data-section="AUDIENCIA">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> FILTRO DE ACCESO</div>
+      <div class="section-label">// ¿PARA QUIÉN ES ESTO?</div>
+    </div>
+    <div class="eyebrow" style="font-size:26px;">ESTO <span class="accent">NO</span> ES PARA TODOS</div>
+    <div class="body-md gray" style="max-width:1500px; margin-top:-10px;">Necesito que entiendas desde el primer minuto: esto es para los que están <span class="accent bold" style="color:#FE4100;">listos</span>.</div>
+    <div class="audience-grid">
+      <div class="audience-card">
+        <div class="ord">// 01</div>
+        <p>Los que sienten que fueron <span class="accent bold" style="color:#FE4100;">llamados a ir por más</span>.</p>
+      </div>
+      <div class="audience-card">
+        <div class="ord">// 02</div>
+        <p>Los que se cansaron de la <span class="gray">rotonda eterna</span> de la vida que solo los lleva al mismo lugar.</p>
+      </div>
+      <div class="audience-card">
+        <div class="ord">// 03</div>
+        <p>Los que saben que están hechos para un <span class="accent bold" style="color:#FE4100;">propósito</span>, no para una vida de supervivencia.</p>
+      </div>
+      <div class="audience-card">
+        <div class="ord">// 04</div>
+        <p>Los que deseen la <span class="accent bold" style="color:#FE4100;">valentía</span> que tuvo Jesús para llevar el propósito de Dios hasta las últimas consecuencias.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 06 · EQUIPO DE ÉLITE ==================== -->
+  <section class="slide" data-section="ESTRUCTURA">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> ESTANDARTE</div>
+      <div class="section-label">// EQUIPO DE ÉLITE</div>
+    </div>
+    <div class="title-md">Este <span class="accent">no</span> es un espacio de debate.<br>Es un espacio de <span class="accent">entrenamiento</span>.</div>
+    <div class="pillars-row">
+      <div class="pillar-card">
+        <div class="num-large">// 01</div>
+        <div class="word accent">ESTRUCTURA</div>
+        <div class="desc">Sistema probado. Sin improvisación.</div>
+      </div>
+      <div class="pillar-card">
+        <div class="num-large">// 02</div>
+        <div class="word accent">DISCIPLINA</div>
+        <div class="desc">Ejecución diaria. Sin excepciones.</div>
+      </div>
+      <div class="pillar-card">
+        <div class="num-large">// 03</div>
+        <div class="word accent">PLAN</div>
+        <div class="desc">Ruta clara. Decisión tras decisión.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 07 · SECTION BREAK · NO ES UN CURSO ==================== -->
+  <section class="slide section-break" data-section="SECCIÓN 02">
+    <div class="sb-label">// PARTE II</div>
+    <div class="sb-title">ESTO NO ES<br>UN CURSO</div>
+    <div class="accent-line-thin"></div>
+    <div class="sb-sub">— Es una MISIÓN —</div>
+  </section>
+
+  <!-- ==================== SLIDE 08 · LO QUE UN CURSO OFRECE (HELL) ==================== -->
+  <section class="slide" data-section="EL VIEJO SISTEMA">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> MÉTODO ANTIGUO</div>
+      <div class="section-label">// LO QUE YA CONOCÉS</div>
+    </div>
+    <div class="eyebrow" style="color:#666;">UN CURSO TE OFRECE</div>
+    <div class="list-grid" style="margin-top:30px;">
+      <div class="list-card">
+        <div class="icn bad">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="text gray">Contenido teórico pasivo <small>Sin guía de aplicación real</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn bad">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="text gray">Información aislada <small>Genera parálisis por análisis</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn bad">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="text gray">Sin enfoque integral <small>Separa la fe de la práctica profesional</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn bad">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="text gray">Soledad en el proceso <small>Sin comunidad de apoyo real</small></div>
+      </div>
+      <div class="list-card" style="grid-column: span 2; justify-content: flex-start;">
+        <div class="icn bad">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="text gray">Falta de herramientas prácticas <small>Sin plantillas ni soporte personalizado</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 09 · LO QUE NOSOTROS BRINDAMOS (HEAVEN) ==================== -->
+  <section class="slide" data-section="EL NUEVO SISTEMA">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> MÉTODO PROBADO</div>
+      <div class="section-label">// LO QUE VAS A RECIBIR</div>
+    </div>
+    <div class="eyebrow">NOSOTROS TE BRINDAMOS</div>
+    <div class="list-grid" style="grid-template-columns: 1fr 1fr; margin-top:30px;">
+      <div class="list-card">
+        <div class="icn good">
+          <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <div class="text">Desaprender lo pasado y vaciarte <small class="gray">Para ser lleno de lo bueno</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn good">
+          <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <div class="text">Recorrido bíblico exacto <small class="gray">Finanzas · negocios · desarrollo personal</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn good">
+          <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <div class="text">7 pilares de formación integral <small class="gray">Mentalidad de Reino, Mayordomía, Propósito…</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn good">
+          <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <div class="text">Metodología de ejecución <small class="gray">Implementación inmediata garantizada</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn good">
+          <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <div class="text">Comunidad global exclusiva <small class="gray">Emprendedores cristianos · networking</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn good">
+          <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <div class="text">Herramientas de alto valor <small class="gray">Planillas financieras, guías y hábitos de Reino</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn good">
+          <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <div class="text">Acompañamiento semanal en vivo <small class="gray">Resolución de dudas y mentoría directa</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn good">
+          <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <div class="text">Sistema de Soporte Ejecutivo <small class="gray">Nunca estarás solo en decisiones críticas</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 10 · CONTRASTE INFIERNO/ÉLITE ==================== -->
+  <section class="slide" data-section="CONTRASTE">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> LA DIFERENCIA</div>
+      <div class="section-label">// INFIERNO vs ÉLITE</div>
+    </div>
+    <div class="title-md">La diferencia es <span class="accent">noche y día</span>.</div>
+    <div class="contrast-rows">
+      <div class="crow">
+        <div class="old">Información</div>
+        <div class="vs">VS</div>
+        <div class="new">Transformación</div>
+      </div>
+      <div class="crow">
+        <div class="old">Soledad</div>
+        <div class="vs">VS</div>
+        <div class="new accent">Comunidad</div>
+      </div>
+      <div class="crow">
+        <div class="old">Caos</div>
+        <div class="vs">VS</div>
+        <div class="new">Sistema</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 11 · 7 PILARES ==================== -->
+  <section class="slide" data-section="PILARES">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> METODOLOGÍA</div>
+      <div class="section-label">// LOS 7 PILARES INNEGOCIABLES</div>
+    </div>
+    <div class="eyebrow">FORMACIÓN INTEGRAL EN</div>
+    <h2 class="title-lg" style="margin-bottom:20px;">7 Pilares <span class="accent">Innegociables</span></h2>
+    <div class="pillars-7">
+      <div class="p7">
+        <div class="num">// 01</div>
+        <div class="name">Mentalidad de Reino</div>
+        <div class="desc">Pensar desde la abundancia, no la escasez.</div>
+      </div>
+      <div class="p7">
+        <div class="num">// 02</div>
+        <div class="name">Mayordomía</div>
+        <div class="desc">Administración bíblica de recursos.</div>
+      </div>
+      <div class="p7">
+        <div class="num">// 03</div>
+        <div class="name">Propósito</div>
+        <div class="desc">Claridad de misión personal y profesional.</div>
+      </div>
+      <div class="p7">
+        <div class="num">// 04</div>
+        <div class="name">Modelado de Negocios</div>
+        <div class="desc">Estructura rentable con ética cristiana.</div>
+      </div>
+      <div class="p7 wide" style="grid-column: span 2;">
+        <div class="num">// 05</div>
+        <div class="name" style="font-size:26px;">Expansión · Escalado · Multiplicación</div>
+        <div class="desc">Crecimiento sostenido sin perder la esencia. Cada pilar tiene un objetivo claro. Cada semana una misión concreta. Cada día herramientas prácticas.</div>
+      </div>
+      <div class="p7">
+        <div class="num">// 06</div>
+        <div class="name">Liderazgo de Élite</div>
+        <div class="desc">Formar equipos de alto rendimiento.</div>
+      </div>
+      <div class="p7">
+        <div class="num">// 07</div>
+        <div class="name">Legado Eterno</div>
+        <div class="desc">Impacto que trasciende generaciones.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 12 · 24 SEMANAS ==================== -->
+  <section class="slide" data-section="ESTRUCTURA">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> PLAN TÁCTICO</div>
+      <div class="section-label">// 24 SEMANAS DE EJECUCIÓN</div>
+    </div>
+    <div class="title-lg">24 Semanas<br><span class="accent">de Transformación</span></div>
+    <div class="body-md gray" style="max-width:1300px; margin-top:30px;">No improvisamos. <span class="accent bold" style="color:#FE4100;">No permitimos que el caos dirija tu vida</span>. Cada pilar tiene un objetivo claro. Cada semana, una misión concreta.</div>
+    <div class="tactical-grid">
+      <div class="tg">
+        <div class="big">7</div>
+        <div class="lbl accent">Pilares</div>
+        <div class="sub">Innegociables</div>
+      </div>
+      <div class="tg">
+        <div class="big">24</div>
+        <div class="lbl accent">Semanas</div>
+        <div class="sub">Con misión concreta</div>
+      </div>
+      <div class="tg">
+        <div class="big">∞</div>
+        <div class="lbl accent">Días</div>
+        <div class="sub">Con herramientas prácticas</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 13 · SECTION BREAK · JOSÉ ==================== -->
+  <section class="slide section-break" data-section="SECCIÓN 03">
+    <div class="sb-label">// PARTE III</div>
+    <div class="sb-title">QUIÉN ES<br><span class="accent">JOSÉ DE ARIMATEA</span></div>
+    <div class="accent-line-thin"></div>
+    <div class="sb-sub">— El modelo que nos define —</div>
+  </section>
+
+  <!-- ==================== SLIDE 14 · PERFIL DE JOSÉ ==================== -->
+  <section class="slide" data-section="ARQUETIPO">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> EL ARQUETIPO</div>
+      <div class="section-label">// PERFIL BÍBLICO</div>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-card">
+        <div class="role">// EL MODELO</div>
+        <div class="name">José<br><em>de Arimatea</em></div>
+        <div class="ref">Un hombre de la Biblia que es el modelo de todo lo que somos. Ahora quiero que lo conozcas.</div>
+      </div>
+      <div class="profile-facts">
+        <div class="pfact">
+          <div class="icn">
+            <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+          </div>
+          <div class="txt">Discípulo anónimo y secreto<small>Estaba con Jesús en las sombras</small></div>
+        </div>
+        <div class="pfact">
+          <div class="icn">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="txt">Hermano de María<small>Tío de Jesús · familia directa</small></div>
+        </div>
+        <div class="pfact">
+          <div class="icn">
+            <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="txt">Hombre rico y justo<small>Recursos e integridad a la vez</small></div>
+        </div>
+        <div class="pfact">
+          <div class="icn">
+            <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 12h.01M9 15h.01M9 18h.01M14 9h.01M14 12h.01M14 15h.01M14 18h.01"/></svg>
+          </div>
+          <div class="txt">Miembro del Sanedrín<small>Consejo de sabios · tenía influencia</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 15 · EL MOMENTO DEFINITORIO ==================== -->
+  <section class="slide" data-section="EL MOMENTO">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> ACTO DE VALENTÍA</div>
+      <div class="section-label">// EL MOMENTO DE LA VERDAD</div>
+    </div>
+    <div class="title-md">Cuando <span class="gray" style="text-decoration:line-through;">todos huyeron</span>…<br><span class="accent">él se acercó a plena luz del día.</span></div>
+    <div class="moment-flow">
+      <div class="mstep">
+        <div class="step-num">// FASE 01</div>
+        <div class="step-title gray">Los demás discípulos</div>
+        <div class="step-text">Se <em>escondieron</em> por el miedo. Abandonaron la causa.</div>
+      </div>
+      <div class="mstep">
+        <div class="step-num">// FASE 02</div>
+        <div class="step-title accent">José se levantó</div>
+        <div class="step-text">Se acercó a <em>Poncio Pilato</em> a plena luz del día. Pidió el cuerpo de Jesús.</div>
+      </div>
+      <div class="mstep">
+        <div class="step-num">// FASE 03</div>
+        <div class="step-title">Acto público</div>
+        <div class="step-text">Lo bajó de la cruz. Lo colocó en su tumba nueva. <em>Todo público. Todo con su nombre.</em></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 16 · LA REVELACIÓN ==================== -->
+  <section class="slide quote-slide" data-section="REVELACIÓN">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> REVELACIÓN CLAVE</div>
+      <div class="section-label">// EL SECRETO DE JOSÉ</div>
+    </div>
+    <div class="quote-mark">&ldquo;</div>
+    <div class="quote-text">Sus recursos <em>no eran suyos</em>.<br><br>Eran instrumentos <em>del Reino</em>.</div>
+    <p class="quote-sub">José era un hombre de negocios. Tenía dinero, influencia, contactos. Y en el momento de la verdad, no se escondió.</p>
+  </section>
+
+  <!-- ==================== SLIDE 17 · EL ARQUETIPO ==================== -->
+  <section class="slide archetype" data-section="IDENTIDAD">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> DECLARACIÓN DE IDENTIDAD</div>
+      <div class="section-label">// ¿QUIÉN SOS VOS?</div>
+    </div>
+    <div class="arc-eyebrow">ESE ES EL ARQUETIPO. ESE SOS VOS.</div>
+    <h2 class="arc-title">Sos un<br><em>José de Arimatea moderno</em></h2>
+    <div class="arc-tags">
+      <div class="arc-tag">Recursos</div>
+      <div class="arc-tag">Fe</div>
+      <div class="arc-tag">Disciplina</div>
+      <div class="arc-tag">Integridad</div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 18 · EMPRESA COMO PÚLPITO ==================== -->
+  <section class="slide" data-section="PROPÓSITO EMPRESARIAL">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> REPOSICIONAMIENTO</div>
+      <div class="section-label">// TU NUEVO PARADIGMA</div>
+    </div>
+    <div class="title-md">Tu empresa no es un fin.<br><span class="accent">Es una plataforma estratégica</span> para la expansión del Reino.</div>
+    <div class="pulpit-lines">
+      <div class="pline">
+        <div class="num">01.</div>
+        <div class="txt">Tu empresa es tu <span class="accent" style="color:#FE4100;">primer púlpito</span>.</div>
+      </div>
+      <div class="pline">
+        <div class="num">02.</div>
+        <div class="txt">Tus decisiones financieras son <span class="accent" style="color:#FE4100;">actos de adoración</span>.</div>
+      </div>
+      <div class="pline">
+        <div class="num">03.</div>
+        <div class="txt">Cada negociación es una oportunidad para mostrar la <span class="accent" style="color:#FE4100;">provisión de Dios</span>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 19 · SECTION · TU COMPROMISO ==================== -->
+  <section class="slide section-break" data-section="SECCIÓN 04">
+    <div class="sb-label">// PARTE IV</div>
+    <div class="sb-title">ESTO NO ES UN CAMINO<br>DE <span class="accent">PASAJEROS</span></div>
+    <div class="accent-line-thin"></div>
+    <div class="sb-sub">— Es un pacto entre comandos —</div>
+  </section>
+
+  <!-- ==================== SLIDE 20 · DEJAR ATRÁS ==================== -->
+  <section class="slide" data-section="COMPROMISO">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> PACTO</div>
+      <div class="section-label">// LO QUE DEJAMOS ATRÁS</div>
+    </div>
+    <div class="title-md">Para alcanzar la transformación, dejaremos atrás:</div>
+    <div class="list-grid" style="grid-template-columns: 1fr 1fr; margin-top:50px;">
+      <div class="list-card">
+        <div class="icn bad">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="text">Mentalidad de <span class="accent" style="color:#FE4100;">escasez</span><small class="gray">Miedo a la falta y a la competencia</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn bad">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="text">La <span class="accent" style="color:#FE4100;">zona de confort</span><small class="gray">La procrastinación se termina hoy</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn bad">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="text">El <span class="accent" style="color:#FE4100;">orgullo</span> de resolver solo<small class="gray">Pediremos ayuda en comunidad leal</small></div>
+      </div>
+      <div class="list-card">
+        <div class="icn bad">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="text">Distracciones <span class="accent" style="color:#FE4100;">improductivas</span><small class="gray">Hábitos sin valor al propósito</small></div>
+      </div>
+      <div class="list-card" style="grid-column: span 2; justify-content: flex-start;">
+        <div class="icn bad">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="text">Vivir <span class="accent" style="color:#FE4100;">apagando incendios</span><small class="gray">Acá priorizamos la planificación estratégica y el orden bíblico</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 21 · TU CASA ==================== -->
+  <section class="slide archetype" data-section="BIENVENIDA FINAL">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> PACTO SELLADO</div>
+      <div class="section-label">// BIENVENIDA OFICIAL</div>
+    </div>
+    <div class="arc-eyebrow">SI ESTÁS DISPUESTO A PAGAR ESE PRECIO…</div>
+    <h2 class="arc-title">Esta es tu<br><em>casa</em>. Esta es tu <em>tropa</em>.</h2>
+  </section>
+
+  <!-- ==================== SLIDE 22 · TÁCTICAS ESPECIALES ==================== -->
+  <section class="slide" data-section="FUERZAS ESPECIALES">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> OPERACIONES</div>
+      <div class="section-label">// TÁCTICAS DE ÉLITE</div>
+    </div>
+    <div class="title-md">En las fuerzas especiales utilizamos:</div>
+    <div class="tactic-grid">
+      <div class="tactic">
+        <div class="ord">// TACTICA 01</div>
+        <div class="word accent">SIGILO</div>
+        <div class="desc">Operar donde nadie más ve. Estrategia invisible.</div>
+      </div>
+      <div class="tactic">
+        <div class="ord">// TACTICA 02</div>
+        <div class="word accent">VELOCIDAD</div>
+        <div class="desc">Ejecución fulminante. Decidir antes que otros reaccionen.</div>
+      </div>
+      <div class="tactic">
+        <div class="ord">// TACTICA 03</div>
+        <div class="word accent">VIOLENCIA<br>EN ACCIÓN</div>
+        <div class="desc">Determinación total. Sin titubeos. Sin medias tintas.</div>
+      </div>
+    </div>
+    <div class="body-md accent bold" style="text-align:center; margin-top:30px;">Aprenderás estas y muchas más estrategias y tácticas de fuerzas especiales.</div>
+  </section>
+
+  <!-- ==================== SLIDE 23 · PRÓXIMAS CLASES ==================== -->
+  <section class="slide" data-section="ROADMAP">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> HOJA DE RUTA</div>
+      <div class="section-label">// PRÓXIMAS CLASES</div>
+    </div>
+    <div class="title-lg">En las próximas clases<br>vamos a profundizar en:</div>
+    <div class="next-grid">
+      <div class="nxt">
+        <div class="n">// CLASE 02</div>
+        <div class="ttl accent">Misión</div>
+        <div class="sub">La razón última</div>
+      </div>
+      <div class="nxt">
+        <div class="n">// CLASE 03</div>
+        <div class="ttl accent">Visión</div>
+        <div class="sub">El horizonte</div>
+      </div>
+      <div class="nxt">
+        <div class="n">// CLASE 04</div>
+        <div class="ttl accent">Propósito</div>
+        <div class="sub">El motor interno</div>
+      </div>
+      <div class="nxt">
+        <div class="n">// CLASE 05</div>
+        <div class="ttl accent">Metodología</div>
+        <div class="sub">El sistema</div>
+      </div>
+      <div class="nxt">
+        <div class="n">// CLASE 06</div>
+        <div class="ttl accent">Áreas<br>de Control</div>
+        <div class="sub">Dónde poner foco</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 24 · LA DECISIÓN ==================== -->
+  <section class="slide" data-section="DECISIÓN">
+    <div class="slide-header">
+      <div class="chip"><span class="dot"></span> EL MOMENTO</div>
+      <div class="section-label">// TU DECISIÓN</div>
+    </div>
+    <div class="title-md" style="margin-bottom:20px;">¿Estás <span class="accent">dentro</span> o <span class="gray">afuera</span>?<br>¿Sos parte del <span class="accent">ejército</span> o seguís observando?</div>
+    <div class="decision-grid">
+      <div class="d-col no">
+        <div class="q">// Observador</div>
+        <div class="a">AFUERA</div>
+      </div>
+      <div class="d-col yes">
+        <div class="q">// Comando del Reino</div>
+        <div class="a">DENTRO</div>
+      </div>
+    </div>
+    <div class="commitments">
+      <div class="commit">
+        <div class="who">// VOZ 01 · MARCOS</div>
+        <div class="msg">Yo ya tomé mi decisión.</div>
+      </div>
+      <div class="commit">
+        <div class="who">// VOZ 02 · LIDERAZGO</div>
+        <div class="msg">Estoy aquí para guiarte.</div>
+      </div>
+      <div class="commit">
+        <div class="who">// VOZ 03 · DIOS</div>
+        <div class="msg">Él ya tomó Su decisión. Te trajo hasta acá.</div>
+      </div>
+    </div>
+    <div class="body-md accent bold" style="text-align:center; margin-top:30px; font-size:32px; text-transform:uppercase; letter-spacing:4px;">— AHORA ES TU TURNO. —</div>
+  </section>
+
+  <!-- ==================== SLIDE 25 · DECLARACIÓN FINAL ==================== -->
+  <section class="slide declaration" data-section="DECLARACIÓN">
+    <div class="decl-eyebrow">// DECLARACIÓN DE COMANDO</div>
+    <div class="decl-text">
+      <em>Soy un Comando del Reino.</em>
+      <span class="breaker"></span>
+      Diseñado para <em>romper barreras</em>,
+      <span class="breaker"></span>
+      y expandir el Reino de Dios
+      <span class="breaker"></span>
+      con una <em>Mentalidad del Éxito</em>.
+    </div>
+    <div class="decl-divider"></div>
+    <div class="decl-final">NOS VEMOS EN LA PRÓXIMA CLASE.</div>
+  </section>
+
+</div>
+</div>
+
+<!-- Controles fijos -->
+<div class="controls">
+  <button id="prev" aria-label="Anterior">‹</button>
+  <span class="counter" id="counter">01 / 25</span>
+  <button id="next" aria-label="Siguiente">›</button>
+</div>
+<div class="hint">PRESIONA ESPACIO O → PARA AVANZAR</div>
+
+<script>
+  /* =========================================================
+     SCALING ROBUSTO
+     - El lienzo es 1920x1080 fijo en layout.
+     - Calculamos el factor de escala según el viewport.
+     - Aplicamos via variable CSS (--canvas-scale) para
+       evitar pisar otras transformaciones declaradas.
+     - Usamos requestAnimationFrame para evitar parpadeos.
+     - En pantallas retina/4K renderizamos al máximo posible.
+     ========================================================= */
+  const BASE_W = 1920;
+  const BASE_H = 1080;
+
+  function setScale() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    // factor de escala que mantiene proporción (letterbox si sobra)
+    const s = Math.min(vw / BASE_W, vh / BASE_H);
+    document.documentElement.style.setProperty('--canvas-scale', s);
+    // Log de diagnóstico (queda en consola por si hay que ajustar)
+    // console.info(`[canvas] viewport=${vw}x${vh} → scale=${s.toFixed(4)}`);
+  }
+
+  function rAFScale() {
+    requestAnimationFrame(setScale);
+  }
+
+  // Ejecutar en cuanto esté listo
+  setScale();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', rAFScale);
+  }
+  window.addEventListener('load', rAFScale);
+  window.addEventListener('resize', rAFScale);
+  window.addEventListener('orientationchange', rAFScale);
+
+  /* =========================================================
+     NAVIGATION — slides, teclado, botones
+     ========================================================= */
+  const slides   = document.querySelectorAll('.slide');
+  const counter  = document.getElementById('counter');
+  const total    = slides.length;
+
+  function current() {
+    let i = 0;
+    slides.forEach((s, idx) => { if (s.classList.contains('active')) i = idx; });
+    return i;
+  }
+
+  function goTo(index) {
+    if (index < 0) index = total - 1;
+    if (index >= total) index = 0;
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    const n = String(index + 1).padStart(2, '0');
+    const t = String(total).padStart(2, '0');
+    counter.textContent = `${n} / ${t}`;
+    const h = document.querySelector('.hint');
+    if (h) h.style.display = 'none';
+  }
+
+  document.getElementById('next').addEventListener('click', () => goTo(current() + 1));
+  document.getElementById('prev').addEventListener('click', () => goTo(current() - 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      goTo(current() + 1);
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'Backspace') {
+      e.preventDefault();
+      goTo(current() - 1);
+    }
+    if (e.key === 'Home') goTo(0);
+    if (e.key === 'End')  goTo(total - 1);
+  });
+
+  // swipe en touch devices
+  let touchX = null;
+  document.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; }, {passive:true});
+  document.addEventListener('touchend',   e => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].screenX - touchX;
+    if (Math.abs(dx) > 60) goTo(current() + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, {passive:true});
+
+  // init
+  goTo(0);
+</script>
+
+</body>
+</html>

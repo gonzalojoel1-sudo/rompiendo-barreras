@@ -1,0 +1,3 @@
+# Forzar HTTPS para todas las páginas
+http://rompiendo-barreras.pages.dev/* https://rompiendo-barreras.pages.dev/:splat 301!
+https://*.pages.dev/*     https://rompiendo-barreras.pages.dev/:splat 301!  Host:rompiendo-barreras.pages.dev
