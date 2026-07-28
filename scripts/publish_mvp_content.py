@@ -21,10 +21,12 @@ sys.path.insert(0, str(ROOT / "vps_backend"))
 from notion_bridge import CachedSchemaService, NotionClient  # noqa: E402
 from notion_bridge.config import NotionBridgeConfig  # noqa: E402
 
-NOTION_TOKEN = os.getenv(
-    "NOTION_API_KEY",
-    "ntn_REDACTED_LEAK_2026-07-28",
-)
+NOTION_TOKEN = os.getenv("NOTION_API_KEY")
+if not NOTION_TOKEN:
+    raise RuntimeError(
+        "NOTION_API_KEY env var required. Define it in your shell or .env. "
+        "See secrets/SECRETS.md (local only — gitignored)."
+    )
 MANIFEST_PATH = ROOT / "manifests" / "notion_databases_manifest.json"
 
 

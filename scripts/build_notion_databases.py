@@ -24,7 +24,12 @@ from typing import Any
 
 import requests
 
-NOTION_TOKEN = os.getenv("NOTION_API_KEY", "ntn_REDACTED_LEAK_2026-07-28")
+NOTION_TOKEN = os.getenv("NOTION_API_KEY")
+if not NOTION_TOKEN:
+    raise RuntimeError(
+        "NOTION_API_KEY env var required. Define it in your shell or .env. "
+        "See secrets/SECRETS.md (local only — gitignored)."
+    )
 PARENT_PAGE_ID = "3a8cfb86-8e33-80e6-999a-df277c673dbc"
 NOTION_VERSION = "2022-06-28"
 BASE_URL = "https://api.notion.com/v1"

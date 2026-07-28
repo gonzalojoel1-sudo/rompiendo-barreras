@@ -635,8 +635,8 @@ VPS_USER (gonzalojoel1_gmail_com)
 
 ```bash
 # Verificar que no hay credentials hardcodeadas
-grep -r "ntn_REDACTED_LEAK_2026-07-28_partial" --include="*.py" --include="*.md" .
-grep -r "REDACTED_LEAK_2026-07-28_TELEGRAM_partial" --include="*.py" --include="*.md" .
+grep -r "ntn_REDACTED_LEAK" --include="*.py" --include="*.md" .
+grep -r "REDACTED_LEAK_2026-07-28_TELEGRAM" --include="*.py" --include="*.md" .
 
 # Verificar syntax errors
 python3 -m py_compile vps_backend/*.py
