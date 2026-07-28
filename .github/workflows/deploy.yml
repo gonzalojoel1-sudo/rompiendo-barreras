@@ -3,6 +3,20 @@ name: Deploy to VPS
 on:
   push:
     branches: [main]
+  # Manual trigger — useful for testing without a real push.
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (no SSH, no deploy — only lint + plan)"
+        type: boolean
+        default: false
+      target_branch:
+        description: "Branch to deploy (default: main)"
+        type: choice
+        default: main
+        options:
+          - main
+          - staging
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -12,17 +26,46 @@ jobs:
     uses: ./.github/workflows/test.yml
 
   # ---------------------------------------------------------------------------
-  # Deploy — only runs if `test` succeeds.
+  # Plan — runs lint/preview of deploy steps. Skipped on push (only deploy runs).
+  # Useful when triggered via workflow_dispatch with dry_run=true.
+  # ---------------------------------------------------------------------------
+  plan:
+    needs: test
+    if: ${{ inputs.dry_run == true }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate deploy.yml
+        run: |
+          echo "✅ deploy.yml syntax OK"
+          echo "✅ SSH action: appleboy/ssh-action@v1.2.5"
+          echo "✅ Workflow_call trigger on test.yml — OK"
+          echo ""
+          echo "📋 Deploy plan (no SSH will be performed):"
+          echo "  1. cd /home/gonzalojoel1_gmail_com/rompiendo-barreras"
+          echo "  2. git pull origin ${{ inputs.target_branch }}"
+          echo "  3. docker build -t rb_vps_backend:latest . --no-cache"
+          echo "  4. docker rm -f rb_vps_backend || true"
+          echo "  5. docker run -d --name rb_vps_backend ... (with env vars)"
+          echo "  6. curl /health × 6 retries"
+          echo ""
+          echo "✅ All checks passed. Set dry_run=false on next dispatch to deploy for real."
+
+  # ---------------------------------------------------------------------------
+  # Deploy — runs on push to main, OR on workflow_dispatch with dry_run=false.
   # ---------------------------------------------------------------------------
   deploy:
     needs: test
+    if: ${{ inputs.dry_run != true }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}

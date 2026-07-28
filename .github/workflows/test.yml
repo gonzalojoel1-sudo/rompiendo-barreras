@@ -3,6 +3,8 @@ name: Test
 on:
   # Reusable workflow — called from .github/workflows/deploy.yml
   workflow_call:
+  # Manual trigger — useful for testing without a push.
+  workflow_dispatch:
   # Standalone triggers — runs on every push/PR to main
   push:
     branches: [main]
