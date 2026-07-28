@@ -98,16 +98,16 @@ jobs:
               -e GOOGLE_CLOUD_REGION=global \
               rb_vps_backend:latest
 
-            echo "⏳ Waiting for healthcheck (max 30s)…"
-            for i in {1..6}; do
+            echo "⏳ Waiting for healthcheck (max 120s — uvicorn tarda en importar todos los módulos en e2-micro)…"
+            for i in {1..24}; do
               sleep 5
               if curl -fsS http://127.0.0.1:8765/health >/dev/null 2>&1; then
-                echo "✅ Backend healthy"
+                echo "✅ Backend healthy after ${i} attempts"
                 exit 0
               fi
-              echo "  attempt $i/6 — retrying…"
+              echo "  attempt $i/24 — retrying…"
             done
 
-            echo "❌ Backend failed healthcheck after 30s"
+            echo "❌ Backend failed healthcheck after 120s"
             docker logs --tail 50 rb_vps_backend
             exit 1
