@@ -49,8 +49,12 @@ services:
   # =============================================================================
   # Bot de Telegram: escucha mensajes de Marcos (texto o nota de voz .ogg)
   # y dispara el orquestador en run_hybrid_squad.py --mode=ideate
+  #
+  # Servicio OPCIONAL: levantar con `docker compose --profile bot up -d`.
+  # Fuera de profile para que el dev local no crashee por tokens faltantes.
   # =============================================================================
   telegram_bot:
+    profiles: ["bot"]                       # Levanta solo con --profile bot
     build:
       context: .
       dockerfile: Dockerfile
@@ -60,18 +64,13 @@ services:
     depends_on:
       orca_backend:
         condition: service_healthy          # Espera al API sano antes de arrancar
+    env_file:
+      - ./vps_backend/.env                  # Inyecta TELEGRAM_BOT_TOKEN, NOTION_API_KEY, etc.
     environment:
-      # Variables que el bot necesita (caracter, no necesitan parse_dotenv)
+      # Solo overrides o vars NO presentes en ./vps_backend/.env.
+      # Cualquier "- VAR" sin valor SOBREESCRIBE el env_file con string vacio.
       - PYTHONPATH=/app
-      - TELEGRAM_BOT_TOKEN
-      - TELEGRAM_ALLOWED_CHAT_IDS
-      - TELEGRAM_LOG_LEVEL
-      - MINIMAX_API_KEY
-      - GOOGLE_APPLICATION_CREDENTIALS
-      - GOOGLE_CLOUD_PROJECT
-      - GOOGLE_CLOUD_REGION
-      - NOTION_API_KEY
-      - ORCA_API_KEY
+      - WEBHOOK_TRIGGER_URL=http://orca_backend:8765/api/v1/orca/webhook/trigger
     volumes:
       - type: bind
         source: ./logs

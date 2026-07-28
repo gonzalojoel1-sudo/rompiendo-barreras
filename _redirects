@@ -1,3 +1,13 @@
-# Forzar HTTPS para todas las páginas
-http://rompiendo-barreras.pages.dev/* https://rompiendo-barreras.pages.dev/:splat 301!
-https://*.pages.dev/*     https://rompiendo-barreras.pages.dev/:splat 301!  Host:rompiendo-barreras.pages.dev
+# Forzar HTTPS para todas las páginas.
+# Cloudflare Pages ya sirve HTTPS por defecto; los redirects aquí son solo
+# rewrites de paths. El "host-redirect" (forzar dominio canonical) NO se puede
+# hacer en _redirects — se hace con Cloudflare Rules en el dashboard.
+#
+# Reglas:
+#   - source/destination son paths (no hosts completos)
+#   - status_code es número puro: 200, 301, 302, 303, 307, 308
+#   - NO usar "!" (es de Netlify, ignorado por Cloudflare)
+#   - NO usar "Host:" header (Cloudflare no lo soporta en _redirects)
+
+# Raíz → clase-01 introduccion
+/  /presentaciones/clase-01-introduccion/  301

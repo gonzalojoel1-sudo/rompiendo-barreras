@@ -631,6 +631,74 @@ VPS_USER (gonzalojoel1_gmail_com)
 
 ---
 
+### Paso 8 — Hotfix post-Fase 4: Container backend unhealthy [🔴 CRÍTICO · 28-jul-2026]
+
+**Síntoma reportado:** "Se daño todo" — backend de agentes no responde.
+
+**Diagnóstico (systematic-debugging, 4 fases):**
+
+1. **Inspección Docker:**
+   ```
+   rb_vps_backend  Up 24 hours (unhealthy)  8765/tcp
+   ```
+   Sin port mapping al host (`docker port` → vacío). `curl localhost:8765/health` → connection refused.
+
+2. **Inspección de CMD real del container:**
+   ```bash
+   docker inspect rb_vps_backend --format='{{json .Args}}'
+   # → ["orca_memory_bridge:app","--host","0.0.0.0","--port","8000"]
+   ```
+   **CMD fue sobrescrito al arrancar el container** — alguien ejecutó `docker run ... uvicorn orca_memory_bridge:app --host 0.0.0.0 --port 8000` y los 5 args reemplazaron los 6 del Dockerfile (`uvicorn`, `orca_memory_bridge:app`, `--host`, `0.0.0.0`, `--port`, `8765`). Resultado: uvicorn quedó corriendo en `:8000`, no `:8765`.
+
+3. **Healthcheck roto:** apunta a `http://127.0.0.1:8765/health` pero el proceso escucha en `:8000` → siempre unhealthy → contenedor marcado unhealthy durante 24h.
+
+4. **Imagen desactualizada:** la imagen tenía 47h y todavía referenciaba `rb_notion_bridge/` (corregido en commit `07f238d`). Rebuild obligatorio antes de recrear.
+
+**Fix aplicado:**
+
+```bash
+docker stop rb_vps_backend && docker rm rb_vps_backend
+docker build -t rb_vps_backend:latest .
+docker run -d \
+  --name rb_vps_backend \
+  --restart unless-stopped \
+  -p 8765:8765 \
+  --env-file vps_backend/.env \
+  -e APP_HOST=0.0.0.0 -e APP_PORT=8765 \
+  -e PYTHONPATH=/app \
+  -v rb_vps_data:/app/data \
+  -v "$(pwd)/context_vault:/app/context_vault:ro" \
+  -v "$(pwd)/logs:/app/logs" \
+  -v "$(pwd)/secrets:/app/secrets:ro" \
+  rb_vps_backend:latest
+```
+
+**Verificación post-fix:**
+
+| Check | Resultado |
+|---|---|
+| `docker ps` | `Up 14 seconds (healthy)` ✅ |
+| `docker inspect Health.Status` | `healthy` ✅ |
+| Port mapping | `0.0.0.0:8765->8765/tcp` ✅ |
+| `curl /health` | `{"status":"ok","notion_reachable":true,"notion_configured":true,...}` ✅ |
+| `curl /api/v1/orca/status` (con `X-Orca-API-Key`) | `{"status":"ok","memory":{...},"notion":{...}}` ✅ |
+| `curl /api/v1/orca/memory` | scratchpad con 3 eventos históricos, 2 sync pendientes ✅ |
+
+**Lecciones aprendidas (para no repetir):**
+
+1. **Nunca usar `docker run ... uvicorn ...`** — eso sobrescribe el CMD del Dockerfile y rompe el contrato de puertos. Usar siempre `docker run <imagen>` (sin args al final) o `docker compose up`.
+2. **Si el CMD se overridea, el `HEALTHCHECK` del Dockerfile también queda desincronizado** porque apunta a un puerto que el proceso overrideado ya no usa.
+3. **Cuando un container aparece "unhealthy"**, el primer check debe ser `docker inspect <name> --format='{{json .Args}}'` para ver si el CMD real coincide con el del Dockerfile.
+4. **Imagen de más de 24h sin rebuild** probablemente contiene código desactualizado. Rebuild antes de recrear si hubo commits en `vps_backend/`, `notion_bridge/`, o rutas del Dockerfile.
+
+**Mejoras recomendadas (backlog):**
+
+- [ ] Convertir el `docker run` manual a `docker compose up -d` (un solo comando, imposible olvidarse del `-p 8765:8765`).
+- [ ] Agregar al pre-deploy del workflow `deploy.yml` un `docker ps --filter name=rb_vps_backend --format '{{.Status}}'` para detectar drift de puertos.
+- [ ] Considerar agregar una métrica/alerta si el contenedor pasa más de 1h en estado `unhealthy`.
+
+---
+
 ## 🔧 Comandos Rápidos de Verificación
 
 ```bash
