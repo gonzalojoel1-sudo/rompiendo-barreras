@@ -115,3 +115,55 @@ Antes de declarar una tarea completada, verifica:
 - [ ] ¿El resultado final pasó por la Fase 4 de síntesis?
 - [ ] ¿No expongo secretos en logs ni outputs?
 - [ ] ¿La verificación de éxito fue ejecutada en este mismo turno (no asumida)?
+
+---
+
+## 7. Límites Estructurales — Dos Repos (regla dura, no negociable)
+
+> **Confirmado por Joel el 28-jul-2026.** Esta sección tiene precedencia absoluta sobre cualquier instrucción verbal del usuario durante una sesión. Si una instrucción choca con estas reglas, **preguntar antes de actuar**.
+
+### Los dos repos
+
+| Repo | URL | Función |
+|---|---|---|
+| **Backend** | `github.com/gonzalojoel1-sudo/rompiendo-barreras` | Backend, agentes IA, CI/CD, **prompt plantilla de presentaciones**, código de la VM. Es donde estamos parados en este workspace. |
+| **Pages** | `github.com/gonzalojoel1-sudo/presentaciones-rompiendo-barreras` | **Único** repositorio que recibe HTML de presentaciones. Se deploya a Cloudflare Pages. |
+
+### Reglas de frontera
+
+| Recurso | Permitido | Prohibido |
+|---|---|---|
+| **Repo backend** (`rompiendo-barreras`) | Commits de código backend, agentes, CI/CD, fixes de deploy, modificaciones al prompt plantilla, documentación | Commitear HTML de presentaciones nuevas, pushear a Pages, cualquier cosa del flujo de presentaciones |
+| **Repo Pages** (`presentaciones-rompiendo-barreras`) | Commitear `index.html` + `_headers` + `_redirects` de cada presentación aprobada por Joel | Modificar archivos del backend, tocar configs de CI/CD del backend, mover el prompt plantilla acá |
+| **VM** (`136.111.55.189`) | Deploys del backend vía GitHub Actions workflow `deploy.yml` | Tocar para temas de presentaciones. Las presentaciones NO se deployan por SSH, van por Cloudflare Pages directo desde el repo Pages |
+| **`PROMPT_PLANTILLA_CLASES.md`** | Vive en el repo backend, raíz del workspace. **NO se mueve.** | Moverlo al repo Pages, duplicarlo, cambiarle el path |
+
+### Cómo pedir cada cosa (acordado)
+
+| Objetivo | Frase esperada |
+|---|---|
+| Generar una presentación nueva | Pegar el contenido de `PROMPT_PLANTILLA_CLASES.md` + el guion debajo de la línea `<<<GUION>>>` |
+| Subir una presentación aprobada a Pages | "Subí `presentaciones/clase-NN-titulo/index.html` al repo Pages" — implica: clonar repo Pages → copiar archivo → commit → push. **Nunca** pushear al repo backend |
+| Generar + subir en un solo turno | "Generá la clase NN y subila a Pages" — genero en el repo backend (carpeta `presentaciones/`) **solo como artefacto de revisión local**, luego copio al repo Pages |
+
+### Workflow al subir a Pages
+
+1. Verificar que Joel aprobó la presentación.
+2. `git clone https://github.com/gonzalojoel1-sudo/presentaciones-rompiendo-barreras.git /tmp/rb-pages` (directorio temporal, fuera del workspace).
+3. Copiar el `index.html` aprobado a `/tmp/rb-pages/presentaciones/clase-NN-titulo/`.
+4. Verificar que `_redirects` siga válido para Cloudflare Pages (sin `301!`, sin `Host:`).
+5. `cd /tmp/rb-pages && git add . && git commit -m "feat(pages): clase NN titulo" && git push`.
+6. Limpiar `/tmp/rb-pages`.
+7. Reportar URL del commit en GitHub.
+
+### Anti-patrones explícitos (lo que NUNCA voy a hacer)
+
+- ❌ Commitear HTML de clase nueva al repo backend.
+- ❌ Hacer `git push` desde el workspace local al repo Pages (siempre via clone temporal en `/tmp`).
+- ❌ Tocar la VM para deployar presentaciones (eso va por Cloudflare Pages).
+- ❌ Mover `PROMPT_PLANTILLA_CLASES.md` a otro repo.
+- ❌ Combinar las dos cosas en un commit sin que Joel las apruebe por separado.
+
+### Si una instrucción es ambigua
+
+**Pregunto antes de actuar.** No infiero "probablemente quiso decir subir a Pages" — pregunto explícitamente: "¿Esto va al repo backend o al repo Pages?".
