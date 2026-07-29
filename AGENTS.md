@@ -167,3 +167,81 @@ Antes de declarar una tarea completada, verifica:
 ### Si una instrucción es ambigua
 
 **Pregunto antes de actuar.** No infiero "probablemente quiso decir subir a Pages" — pregunto explícitamente: "¿Esto va al repo backend o al repo Pages?".
+
+---
+
+## 8. Higiene de Secretos (regla dura, no negociable)
+
+> **Confirmado por Joel el 28-jul-2026.** Esta sección tiene precedencia absoluta. Un solo slip se considera falla grave, no error menor.
+
+### Definición de "secreto"
+
+Cualquier valor que esté (o debería estar) en:
+- `vps_backend/.env`, `vps_backend/.env.example` con valor real (no placeholder `REEMPLAZAR`)
+- Variables de entorno del container (`docker inspect ... .Config.Env`)
+- GitHub Secrets (`gh secret list`)
+- `.env` de la VM (`/home/gonzalojoel1_gmail_com/rompiendo-barreras/vps_backend/.env`)
+- Archivos en `secrets/SECRETS.md`
+- Tokens / API keys / passwords pasados por el usuario en chat
+
+**Esto incluye:** Notion tokens (`ntn_...`), Telegram bot tokens (`...:AAH...`), MiniMax API keys (`sk-cp-...`), OpenAI keys (`sk-...`), Google Application Credentials paths, JWT secrets, SSH private keys, passwords.
+
+### Reglas absolutas
+
+1. **NUNCA** echo de un valor secreto en `bash`, `docker exec`, `docker inspect`, `gh`, `gitleaks`, ni ningún otro comando cuyo output vaya al transcript de la conversación.
+2. **NUNCA** paso un secreto como argumento de CLI (`--body "secret"`, `--token X`, etc.). Siempre stdin redirection (`< tempfile`) o variable de entorno con `--env KEY=VAL` (no echo).
+3. **NUNCA** hago `cat`, `head`, `tail`, `less`, `more`, `grep`, `awk`, `sed` sobre archivos que contienen secretos (`.env`, `*.pem`, `*.key`, `id_rsa_*`, etc.).
+4. **NUNCA** incluyo un valor secreto en un mensaje, log, commit message, PR description, comentario en GitHub, ni en una respuesta al usuario — ni siquiera parcialmente ("el token empieza con ntn_...").
+5. **NUNCA** registro un secreto en un archivo de logs (ni siquiera cifrado). Los logs son públicos en este workflow.
+
+### Cómo verificar/enviar secretos correctamente
+
+| Tarea | Forma correcta | Forma prohibida |
+|---|---|---|
+| Setear GitHub Secret | `gh secret set NAME --repo R < tempfile` (stdin, tempfile 600) | `gh secret set NAME --body "valor"` |
+| Validar un token contra API | curl con header, NO imprimir la respuesta completa. Usar `python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('bot',{}).get('workspace_name'))"` (solo campos seguros) | `curl ... -H "Authorization: Bearer $TOKEN" 2>&1` (puede imprimir error con el token) |
+| Ver env de container | `docker inspect ... --format '{{range .Config.Env}}{{println .}}{{end}}' \| grep "^KEY" \| cut -c1-N` (truncar + solo nombres donde sea posible) | `docker inspect ... --format '{{json .Config.Env}}'` (json dump completo con valores) |
+| Verificar que un secret existe | `gh secret list --repo R \| grep "^NAME"` (solo metadata) | `gh secret get NAME --repo R` (puede fallar por permisos o exponer valores según flags) |
+| Mostrar resultado de auth | Imprimir solo lo NO sensible: workspace name, bot name, key length | Imprimir el token completo, primeros N chars, último char, etc. |
+
+### Antes de ejecutar cualquier comando con secretos
+
+Preguntate:
+
+1. ¿El output de este comando va a imprimirse en mi respuesta al usuario? → Si sí, **no incluir valores secretos**.
+2. ¿Estoy pasando el secreto como argumento de CLI? → Si sí, **cambiar a stdin redirection**.
+3. ¿El comando hace dump de env vars, JSON, o un archivo completo? → Si sí, **filtrar y truncar antes de imprimir**.
+4. ¿Puedo usar un comando alternativo que solo exponga metadata? → Si sí, **usar ese**.
+
+### Si cometo un error y se filtra un secreto
+
+1. **Inmediatamente:** informar a Joel exactamente qué se filtró, dónde, y qué alcance tiene.
+2. **Tratarlo como comprometido:** rotar el secreto (Notion token → regenerar en Notion UI; Telegram token → @BotFather; etc.) en el mismo turno o a la brevedad.
+3. **Auditar:** buscar todas las apariciones del valor filtrado en el transcript de la sesión y reportar.
+4. **Prevenir:** agregar el patrón a la lista de "anti-patrones" de esta sección.
+
+### Si una operación requiere mostrar/enviar un secreto a Joel explícitamente
+
+Joel puede pedirme que le muestre un valor concreto (por ejemplo "mostrame los primeros 8 chars del Notion token para verificar que es el mismo"). En ese caso:
+
+1. **Confirmar que la pidió Joel** (no asumir).
+2. **Mostrar la cantidad mínima necesaria** (típicamente 4-8 chars).
+3. **Pedir confirmación** de que con eso alcanza.
+
+### Anti-patrones explícitos (lo que NUNCA voy a hacer)
+
+- ❌ `docker inspect ... --format '{{json .Config.Env}}'` (dump completo)
+- ❌ `docker exec ... env | grep ...` (imprime todos los valores)
+- ❌ `gh secret set NAME --body "valor"` (secreto en argv, visible en `ps`)
+- ❌ `cat .env` o cualquier read del archivo completo
+- ❌ `echo "TOKEN=$TOKEN"` en scripts de diagnóstico
+- ❌ Pegar valores en commits, mensajes, o respuestas
+- ❌ `gh secret get NAME` (algunas versiones lo permiten)
+
+### Interacción con la sección 7 (Dos Repos)
+
+Estas reglas aplican a **ambos repos** (backend y Pages) y a **cualquier operación** (pull, push, deploy, debug). Cuando opero sobre el repo Pages:
+
+1. Antes de `git clone` o `git pull`: verificar que NO traigo `.env`, `secrets/`, ni `*.key` accidentalmente.
+2. Después de clonar el repo Pages: revisar `git status` antes de cualquier `git add .`.
+3. Si el repo Pages alguna vez tiene secretos versionados (no debería), tratarlos como comprometidos y removerlos del historial.
